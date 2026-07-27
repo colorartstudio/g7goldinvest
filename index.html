@@ -1,0 +1,1668 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>G7 Gold Invest | Platform MVP</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            gold: {
+              300: '#FDE047',
+              400: '#FACC15',
+              500: '#EAB308',
+              600: '#CA8A04',
+              700: '#A16207',
+              gradientStart: '#BF953F',
+              gradientMid: '#FCF6BA',
+              gradientEnd: '#AA771C'
+            },
+            dark: {
+              bg: '#0B0E14',
+              card: '#121721',
+              border: '#1E2638',
+              hover: '#19202E'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+    body {
+      background-color: #0B0E14;
+      color: #E5E7EB;
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* Golden Gradient & Glow Effects */
+    .gold-text-gradient {
+      background: linear-gradient(135deg, #BF953F 0%, #FCF6BA 25%, #B38728 50%, #FBF5B7 75%, #AA771C 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .gold-bg-gradient {
+      background: linear-gradient(135deg, #BF953F 0%, #AA771C 100%);
+    }
+
+    .gold-button-gradient {
+      background: linear-gradient(135deg, #D4AF37 0%, #FFD700 50%, #AA771C 100%);
+      transition: all 0.3s ease;
+    }
+    .gold-button-gradient:hover {
+      box-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
+      transform: translateY(-1px);
+    }
+
+    /* Golden Animated Border Card */
+    .gold-border-card {
+      position: relative;
+      background: #121721;
+      border-radius: 0.75rem;
+      z-index: 1;
+    }
+    .gold-border-card::before {
+      content: '';
+      position: absolute;
+      top: -1px; left: -1px; right: -1px; bottom: -1px;
+      background: linear-gradient(90deg, #BF953F, transparent, #AA771C, transparent, #BF953F);
+      background-size: 200% 200%;
+      border-radius: 0.8rem;
+      z-index: -1;
+      animation: goldBorderRotate 6s linear infinite;
+      opacity: 0.6;
+    }
+
+    @keyframes goldBorderRotate {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* Center Invest Floating Button Glow */
+    .invest-pulse-btn {
+      box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.7);
+      animation: pulseGold 2s infinite;
+    }
+
+    @keyframes pulseGold {
+      0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.7);
+      }
+      70% {
+        transform: scale(1.05);
+        box-shadow: 0 0 0 12px rgba(234, 179, 8, 0);
+      }
+      100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(234, 179, 8, 0);
+      }
+    }
+
+    /* Binary Tree Connector Lines */
+    .tree-line-v {
+      width: 2px;
+      background-color: #374151;
+    }
+    .tree-line-h {
+      height: 2px;
+      background-color: #374151;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0B0E14;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1E2638;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #CA8A04;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between pb-20 md:pb-0">
+
+  <!-- TOP HEADER (Desktop & Mobile Top Bar) -->
+  <header class="bg-dark-card border-b border-dark-border sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      
+      <!-- Logo Component -->
+      <div class="flex items-center space-x-3 cursor-pointer" onclick="app.navigateTo('home')">
+        <div id="appLogo" class="flex items-center space-x-2">
+          <div class="w-10 h-10 rounded-xl gold-bg-gradient flex items-center justify-center shadow-lg shadow-amber-500/20">
+            <i data-lucide="coins" class="w-6 h-6 text-black"></i>
+          </div>
+          <div>
+            <div class="font-bold text-lg tracking-wider gold-text-gradient leading-none">G7 GOLD</div>
+            <div class="text-[10px] text-amber-500 tracking-widest font-semibold uppercase leading-tight">INVESTMENT</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Desktop Navigation Menu -->
+      <nav class="hidden md:flex items-center space-x-1 lg:space-x-2">
+        <button onclick="app.navigateTo('home')" id="nav-home" class="nav-link px-3 py-2 rounded-lg text-sm font-medium text-amber-400 bg-dark-hover flex items-center gap-2">
+          <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard
+        </button>
+        <button onclick="app.navigateTo('team')" id="nav-team" class="nav-link px-3 py-2 rounded-lg text-sm font-medium text-gray-300 hover:text-amber-400 hover:bg-dark-hover flex items-center gap-2">
+          <i data-lucide="users" class="w-4 h-4"></i> Equipe
+        </button>
+        <button onclick="app.openInvestModal()" class="px-4 py-2 rounded-lg text-sm font-bold text-black gold-button-gradient flex items-center gap-2 shadow-md">
+          <i data-lucide="trending-up" class="w-4 h-4 text-black"></i> Investir
+        </button>
+        <button onclick="app.navigateTo('wallet')" id="nav-wallet" class="nav-link px-3 py-2 rounded-lg text-sm font-medium text-gray-300 hover:text-amber-400 hover:bg-dark-hover flex items-center gap-2">
+          <i data-lucide="wallet" class="w-4 h-4"></i> Carteira
+        </button>
+        <button onclick="app.navigateTo('reports')" id="nav-reports" class="nav-link px-3 py-2 rounded-lg text-sm font-medium text-gray-300 hover:text-amber-400 hover:bg-dark-hover flex items-center gap-2">
+          <i data-lucide="file-text" class="w-4 h-4"></i> Relatórios
+        </button>
+      </nav>
+
+      <!-- Right Utility Actions -->
+      <div class="flex items-center space-x-3">
+        
+        <!-- Language Selector -->
+        <div class="relative">
+          <button id="langBtn" onclick="app.toggleLangMenu()" class="p-2 rounded-lg border border-dark-border bg-dark-hover text-gray-300 hover:text-white flex items-center gap-1 text-xs">
+            <span id="currentLangFlag">🇧🇷</span>
+            <span id="currentLangText" class="hidden sm:inline font-semibold">PT</span>
+            <i data-lucide="chevron-down" class="w-3 h-3"></i>
+          </button>
+          <div id="langDropdown" class="hidden absolute right-0 mt-2 w-32 bg-dark-card border border-dark-border rounded-xl shadow-2xl py-1 z-50">
+            <button onclick="app.setLanguage('pt')" class="w-full px-3 py-2 text-left text-xs text-gray-300 hover:bg-dark-hover flex items-center gap-2">🇧🇷 Português</button>
+            <button onclick="app.setLanguage('en')" class="w-full px-3 py-2 text-left text-xs text-gray-300 hover:bg-dark-hover flex items-center gap-2">🇺🇸 English</button>
+            <button onclick="app.setLanguage('es')" class="w-full px-3 py-2 text-left text-xs text-gray-300 hover:bg-dark-hover flex items-center gap-2">🇪🇸 Español</button>
+          </div>
+        </div>
+
+        <!-- Notifications Bell -->
+        <div class="relative">
+          <button onclick="app.toggleNotifications()" class="p-2 rounded-lg border border-dark-border bg-dark-hover text-gray-300 hover:text-amber-400 relative">
+            <i data-lucide="bell" class="w-5 h-5"></i>
+            <span id="notifBadge" class="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 text-black font-bold text-[10px] rounded-full flex items-center justify-center hidden">0</span>
+          </button>
+          <!-- Notification Dropdown -->
+          <div id="notifDropdown" class="hidden absolute right-0 mt-2 w-80 bg-dark-card border border-dark-border rounded-xl shadow-2xl z-50 overflow-hidden">
+            <div class="p-3 border-b border-dark-border flex justify-between items-center bg-dark-hover">
+              <span class="text-xs font-bold text-gray-200">Notificações</span>
+              <button onclick="app.clearNotifications()" class="text-[11px] text-amber-400 hover:underline">Limpar todas</button>
+            </div>
+            <div id="notifList" class="max-h-64 overflow-y-auto divide-y divide-dark-border">
+              <!-- Dynamically Populated -->
+            </div>
+          </div>
+        </div>
+
+        <!-- User Profile Dropdown -->
+        <div class="relative">
+          <button onclick="app.toggleProfileMenu()" class="flex items-center space-x-2 p-1.5 rounded-lg border border-dark-border bg-dark-hover hover:border-amber-500/50 transition">
+            <div class="w-7 h-7 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-xs border border-amber-500/30">
+              <span id="userAvatarChar">G</span>
+            </div>
+            <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-gray-400"></i>
+          </button>
+          
+          <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-64 bg-dark-card border border-dark-border rounded-xl shadow-2xl p-4 z-50">
+            <div class="border-b border-dark-border pb-3 mb-3">
+              <div id="profileName" class="font-bold text-sm text-white">Investidor G7</div>
+              <div id="profileUsername" class="text-xs text-amber-400">@g7investidor</div>
+              <div id="profileEmail" class="text-xs text-gray-400 mt-1 truncate">usuario@g7gold.com</div>
+              <div class="mt-2 text-[11px] text-gray-400 bg-dark-hover p-2 rounded-lg border border-dark-border">
+                Patrocinador: <span id="profileSponsor" class="text-amber-400 font-semibold">@goldmaster</span>
+              </div>
+            </div>
+            <div class="space-y-1">
+              <button onclick="app.navigateTo('settings')" class="w-full text-left px-3 py-2 rounded-lg text-xs text-gray-300 hover:bg-dark-hover flex items-center gap-2">
+                <i data-lucide="settings" class="w-4 h-4 text-amber-400"></i> Configurações & Carteira
+              </button>
+              <button onclick="app.navigateTo('support')" class="w-full text-left px-3 py-2 rounded-lg text-xs text-gray-300 hover:bg-dark-hover flex items-center gap-2">
+                <i data-lucide="headphones" class="w-4 h-4 text-amber-400"></i> Suporte Ao Vivo
+              </button>
+              <button onclick="app.toggleDevPanel()" class="w-full text-left px-3 py-2 rounded-lg text-xs text-amber-400 hover:bg-amber-500/10 flex items-center gap-2 font-medium">
+                <i data-lucide="code" class="w-4 h-4 text-amber-400"></i> Painel de Testes / Dev
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-grow">
+    
+    <!-- VIEW 1: HOME / DASHBOARD -->
+    <div id="view-home" class="space-y-6">
+      
+      <!-- Top 4 Financial Stat Cards -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <!-- Card 1: Ganhos Hoje -->
+        <div class="gold-border-card p-4 flex flex-col justify-between">
+          <div class="flex justify-between items-start">
+            <span class="text-xs font-medium text-gray-400">Ganhos de Hoje</span>
+            <div class="p-1.5 rounded-lg bg-amber-500/10 text-amber-400">
+              <i data-lucide="sun" class="w-4 h-4"></i>
+            </div>
+          </div>
+          <div class="mt-3">
+            <div id="statTodayGains" class="text-xl sm:text-2xl font-bold text-emerald-400">+ $0,00</div>
+            <div class="text-[11px] text-gray-500 mt-1">Rendimento do dia</div>
+          </div>
+        </div>
+
+        <!-- Card 2: Ganhos Equipe -->
+        <div class="gold-border-card p-4 flex flex-col justify-between">
+          <div class="flex justify-between items-start">
+            <span class="text-xs font-medium text-gray-400">Ganhos da Equipe</span>
+            <div class="p-1.5 rounded-lg bg-amber-500/10 text-amber-400">
+              <i data-lucide="users" class="w-4 h-4"></i>
+            </div>
+          </div>
+          <div class="mt-3">
+            <div id="statTeamGains" class="text-xl sm:text-2xl font-bold text-white">$0,00</div>
+            <div class="text-[11px] text-gray-500 mt-1">Indicação + Binário</div>
+          </div>
+        </div>
+
+        <!-- Card 3: Ganhos Totais -->
+        <div class="gold-border-card p-4 flex flex-col justify-between">
+          <div class="flex justify-between items-start">
+            <span class="text-xs font-medium text-gray-400">Ganhos Totais</span>
+            <div class="p-1.5 rounded-lg bg-amber-500/10 text-amber-400">
+              <i data-lucide="award" class="w-4 h-4"></i>
+            </div>
+          </div>
+          <div class="mt-3">
+            <div id="statTotalGains" class="text-xl sm:text-2xl font-bold gold-text-gradient">$0,00</div>
+            <div class="text-[11px] text-gray-500 mt-1">Acumulado histórico</div>
+          </div>
+        </div>
+
+        <!-- Card 4: Disponível para Saque -->
+        <div class="gold-border-card p-4 flex flex-col justify-between">
+          <div class="flex justify-between items-start">
+            <span class="text-xs font-medium text-gray-400">Disponível p/ Saque</span>
+            <div class="p-1.5 rounded-lg bg-amber-500/10 text-amber-400">
+              <i data-lucide="wallet" class="w-4 h-4"></i>
+            </div>
+          </div>
+          <div class="mt-3">
+            <div id="statAvailableWithdraw" class="text-xl sm:text-2xl font-bold text-emerald-400">$0,00</div>
+            <div class="text-[11px] text-gray-500 mt-1">Saldo acumulado livre</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Trading Terminal Visual Section (XAU/USD Chart) -->
+      <div class="bg-dark-card border border-dark-border rounded-2xl p-4 sm:p-5 shadow-xl">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-dark-border">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center">
+              <i data-lucide="candlestick-chart" class="w-5 h-5 text-amber-400"></i>
+            </div>
+            <div>
+              <div class="flex items-center space-x-2">
+                <h2 class="font-bold text-lg text-white">XAU/USD</h2>
+                <span class="text-xs font-semibold px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">GOLD / USD</span>
+                <span class="text-xs text-gray-400 bg-dark-hover px-2 py-0.5 rounded">1m</span>
+              </div>
+              <div class="flex items-center space-x-3 mt-1 text-xs">
+                <span id="chartLivePrice" class="font-bold text-base text-emerald-400">$2.748,50</span>
+                <span id="chartLivePercent" class="text-emerald-400 font-medium">+0,42%</span>
+                <span class="text-gray-500">| Tendência: <span id="chartTrendText" class="text-emerald-400 font-semibold">Alta 🔥</span></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Indicator Signal Badges -->
+          <div class="flex items-center space-x-2 text-xs">
+            <div id="buySignalBadge" class="px-3 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold flex items-center gap-1 animate-pulse">
+              <i data-lucide="arrow-up-right" class="w-4 h-4"></i> BUY
+            </div>
+            <div id="sellSignalBadge" class="px-3 py-1.5 rounded-lg bg-gray-800 text-gray-500 border border-gray-700 font-bold flex items-center gap-1 opacity-50">
+              <i data-lucide="arrow-down-right" class="w-4 h-4"></i> SELL
+            </div>
+          </div>
+        </div>
+
+        <!-- Canvas Trading Chart -->
+        <div class="mt-4 relative h-64 sm:h-80 w-full">
+          <canvas id="xauChartCanvas" class="w-full h-full rounded-xl"></canvas>
+        </div>
+      </div>
+
+      <!-- User Applications & Yield Progress Section -->
+      <div class="space-y-4">
+        <div class="flex justify-between items-center">
+          <div>
+            <h3 class="text-lg font-bold text-white flex items-center gap-2">
+              <i data-lucide="layers" class="w-5 h-5 text-amber-400"></i> Minhas Aplicações
+            </h3>
+            <p class="text-xs text-gray-400">Evolução dos aportes em XAU/USD até dobrar o capital (200%)</p>
+          </div>
+          <button onclick="app.openInvestModal()" class="px-3 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 text-xs font-semibold flex items-center gap-1">
+            <i data-lucide="plus" class="w-4 h-4"></i> Nova Aplicação
+          </button>
+        </div>
+
+        <!-- Applications Grid -->
+        <div id="applicationsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Dynamically Populated Cards -->
+        </div>
+      </div>
+
+    </div>
+
+    <!-- VIEW 2: EQUIPE & BINÁRIO -->
+    <div id="view-team" class="hidden space-y-6">
+      
+      <!-- Referral Link Card -->
+      <div class="bg-dark-card border border-dark-border rounded-2xl p-5 shadow-xl">
+        <h3 class="text-sm font-bold text-gray-300 uppercase tracking-wider mb-2">Seu Link de Indicação</h3>
+        <div class="flex flex-col sm:flex-row gap-3">
+          <div class="relative flex-grow">
+            <input type="text" id="refLinkInput" readonly value="https://g7goldinvest.com/register?ref=g7investidor" class="w-full bg-dark-bg border border-dark-border rounded-xl px-4 py-3 text-sm text-amber-300 font-mono focus:outline-none">
+          </div>
+          <button onclick="app.copyRefLink()" class="px-6 py-3 rounded-xl font-bold text-black gold-button-gradient flex items-center justify-center gap-2 shadow-lg">
+            <i data-lucide="copy" class="w-4 h-4 text-black"></i> <span id="copyBtnText">Copiar</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Binary & Referral Stats Summary -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="bg-dark-card border border-dark-border p-4 rounded-xl">
+          <span class="text-xs text-gray-400">Indicações Diretas (Nível 1)</span>
+          <div id="teamDirectCount" class="text-xl font-bold text-white mt-1">0 Ativos</div>
+          <span class="text-[11px] text-amber-400">Comissão de 5%</span>
+        </div>
+        <div class="bg-dark-card border border-dark-border p-4 rounded-xl">
+          <span class="text-xs text-gray-400">Perna Esquerda (Binário)</span>
+          <div id="binaryLeftPoints" class="text-xl font-bold text-emerald-400 mt-1">0 Pts</div>
+          <span class="text-[11px] text-gray-500">Volume acumulado</span>
+        </div>
+        <div class="bg-dark-card border border-dark-border p-4 rounded-xl">
+          <span class="text-xs text-gray-400">Perna Direita (Binário)</span>
+          <div id="binaryRightPoints" class="text-xl font-bold text-amber-400 mt-1">0 Pts</div>
+          <span class="text-[11px] text-gray-500">Volume acumulado</span>
+        </div>
+      </div>
+
+      <!-- 10 Referrals Active Bonus Tracker Card -->
+      <div class="bg-dark-card border border-amber-500/30 rounded-2xl p-5 relative overflow-hidden">
+        <div class="flex justify-between items-start mb-3">
+          <div>
+            <span class="text-xs font-semibold uppercase text-amber-400 tracking-wider">Bônus Especial de Equipe</span>
+            <h4 class="font-bold text-lg text-white">Meta de 10 Participantes Ativos</h4>
+            <p class="text-xs text-gray-400">Cadastre 10 diretos com aplicação mínima de $100 e receba $100 de bônus extra!</p>
+          </div>
+          <span class="px-3 py-1 rounded-full bg-amber-500/20 text-amber-400 font-bold text-sm border border-amber-500/40">$100 Bônus</span>
+        </div>
+        <div class="space-y-2 mt-4">
+          <div class="flex justify-between text-xs text-gray-300 font-semibold">
+            <span>Progresso de Participantes</span>
+            <span id="bonusProgressText">0 / 10 Ativos</span>
+          </div>
+          <div class="w-full h-3 bg-dark-bg rounded-full overflow-hidden border border-dark-border p-0.5">
+            <div id="bonusProgressBar" class="h-full gold-bg-gradient rounded-full transition-all duration-500" style="width: 0%;"></div>
+          </div>
+        </div>
+        <button id="claimBonusBtn" onclick="app.claimTeamBonus()" disabled class="mt-4 w-full py-2.5 rounded-xl font-bold text-xs bg-gray-800 text-gray-500 cursor-not-allowed transition">
+          Resgatar Bônus de $100
+        </button>
+      </div>
+
+      <!-- Binary Network Tree Component (Exact match to uploaded image structure) -->
+      <div class="bg-dark-card border border-dark-border rounded-2xl p-5 shadow-xl">
+        <div class="flex justify-between items-center border-b border-dark-border pb-3 mb-6">
+          <h3 class="font-bold text-base text-white flex items-center gap-2">
+            <i data-lucide="git-fork" class="w-5 h-5 text-amber-400"></i> Estrutura da Rede
+          </h3>
+          <span class="text-xs text-amber-400 font-mono bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/20">Binário: 10% Menor Perna</span>
+        </div>
+
+        <!-- Binary Tree Container -->
+        <div class="relative py-4 flex flex-col items-center justify-center overflow-x-auto min-w-[320px]">
+          
+          <!-- Root Node (Eu) -->
+          <div class="flex flex-col items-center z-10">
+            <div class="relative group cursor-pointer">
+              <div class="w-14 h-14 rounded-full border-2 border-emerald-500 bg-dark-card flex items-center justify-center font-bold text-lg text-white shadow-lg shadow-emerald-500/20 hover:scale-105 transition">
+                Eu
+              </div>
+              <!-- Tooltip -->
+              <div class="hidden group-hover:block absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-36 bg-dark-hover border border-dark-border p-2 rounded-xl text-center shadow-xl z-30">
+                <div class="font-bold text-xs text-white">Você (Líder)</div>
+                <div class="text-[10px] text-amber-400">@g7investidor</div>
+                <div class="text-[10px] text-emerald-400 font-semibold mt-0.5">Ativo</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Vertical Connector Line from Root -->
+          <div class="tree-line-v h-6"></div>
+
+          <!-- Horizontal Connector Line between Level 1 -->
+          <div class="tree-line-h w-48 sm:w-64"></div>
+
+          <!-- Level 1 Nodes Container -->
+          <div class="w-48 sm:w-64 flex justify-between relative -mt-[1px]">
+            <div class="tree-line-v h-6"></div>
+            <div class="tree-line-v h-6"></div>
+          </div>
+
+          <!-- Level 1 Nodes -->
+          <div class="w-64 sm:w-80 flex justify-between items-center z-10 -mt-[1px]">
+            
+            <!-- Left Child Node J -->
+            <div class="flex flex-col items-center relative group cursor-pointer">
+              <div id="node-J" class="w-12 h-12 rounded-full border-2 border-emerald-500 bg-emerald-500/20 text-emerald-400 font-bold text-lg flex items-center justify-center shadow-md">
+                J
+              </div>
+              <!-- Tooltip -->
+              <div class="hidden group-hover:block absolute top-full mt-2 left-1/2 -translate-x-1/2 w-36 bg-dark-hover border border-dark-border p-2 rounded-xl text-center shadow-xl z-30">
+                <div class="font-bold text-xs text-white" id="nodeJName">João</div>
+                <div class="text-[10px] text-amber-400" id="nodeJUser">@joao123</div>
+                <div class="text-[10px] text-emerald-400 font-semibold">Ativo ($500)</div>
+              </div>
+            </div>
+
+            <!-- Right Child Node M -->
+            <div class="flex flex-col items-center relative group cursor-pointer">
+              <div id="node-M" class="w-12 h-12 rounded-full border-2 border-red-500 bg-red-500/20 text-red-400 font-bold text-lg flex items-center justify-center shadow-md">
+                M
+              </div>
+              <!-- Tooltip -->
+              <div class="hidden group-hover:block absolute top-full mt-2 left-1/2 -translate-x-1/2 w-36 bg-dark-hover border border-dark-border p-2 rounded-xl text-center shadow-xl z-30">
+                <div class="font-bold text-xs text-white" id="nodeMName">Maria</div>
+                <div class="text-[10px] text-amber-400" id="nodeMUser">@maria_g7</div>
+                <div class="text-[10px] text-red-400 font-semibold">Ativo ($100)</div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Level 2 Connector Lines -->
+          <div class="w-64 sm:w-80 flex justify-between px-6 mt-0">
+            <div class="flex flex-col items-center">
+              <div class="tree-line-v h-6"></div>
+              <div class="tree-line-h w-20 sm:w-28"></div>
+              <div class="w-20 sm:w-28 flex justify-between">
+                <div class="tree-line-v h-6"></div>
+                <div class="tree-line-v h-6"></div>
+              </div>
+            </div>
+            <div class="flex flex-col items-center">
+              <div class="tree-line-v h-6"></div>
+              <div class="tree-line-h w-20 sm:w-28"></div>
+              <div class="w-20 sm:w-28 flex justify-between">
+                <div class="tree-line-v h-6"></div>
+                <div class="tree-line-v h-6"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Level 2 Leaf Nodes -->
+          <div class="w-80 sm:w-96 flex justify-between items-center z-10 -mt-[1px]">
+            
+            <!-- Leaf P (Left-Left) -->
+            <div class="relative group cursor-pointer">
+              <div class="w-10 h-10 rounded-full border-2 border-blue-500 bg-blue-500/20 text-blue-400 font-bold text-sm flex items-center justify-center">
+                P
+              </div>
+              <div class="hidden group-hover:block absolute top-full mt-2 left-1/2 -translate-x-1/2 w-32 bg-dark-hover border border-dark-border p-2 rounded-xl text-center shadow-xl z-30">
+                <div class="font-bold text-xs text-white">Pedro</div>
+                <div class="text-[10px] text-amber-400">@pedro_g7</div>
+                <div class="text-[10px] text-emerald-400">Ativo</div>
+              </div>
+            </div>
+
+            <!-- Leaf Empty Slot (Left-Right) -->
+            <div class="w-10 h-10 rounded-full border border-gray-700 bg-dark-hover text-gray-600 flex items-center justify-center">
+              <i data-lucide="user" class="w-5 h-5"></i>
+            </div>
+
+            <!-- Leaf A (Right-Left) -->
+            <div class="relative group cursor-pointer">
+              <div class="w-10 h-10 rounded-full border-2 border-purple-500 bg-purple-500/20 text-purple-400 font-bold text-sm flex items-center justify-center">
+                A
+              </div>
+              <div class="hidden group-hover:block absolute top-full mt-2 left-1/2 -translate-x-1/2 w-32 bg-dark-hover border border-dark-border p-2 rounded-xl text-center shadow-xl z-30">
+                <div class="font-bold text-xs text-white">Ana</div>
+                <div class="text-[10px] text-amber-400">@ana_gold</div>
+                <div class="text-[10px] text-emerald-400">Ativo</div>
+              </div>
+            </div>
+
+            <!-- Leaf Empty Slot (Right-Right) -->
+            <div class="w-10 h-10 rounded-full border border-gray-700 bg-dark-hover text-gray-600 flex items-center justify-center">
+              <i data-lucide="user" class="w-5 h-5"></i>
+            </div>
+
+          </div>
+
+        </div>
+
+        <p class="text-center text-xs text-gray-400 mt-6 border-t border-dark-border pt-3">
+          <i data-lucide="info" class="w-3.5 h-3.5 inline mr-1 text-amber-400"></i> Dica: Passe o mouse ou toque nos avatares para ver detalhes.
+        </p>
+      </div>
+
+    </div>
+
+    <!-- VIEW 3: CARTEIRA & SAQUE -->
+    <div id="view-wallet" class="hidden space-y-6">
+      
+      <div class="flex justify-between items-center">
+        <div>
+          <h2 class="text-xl font-bold text-white">Sua Carteira Financeira</h2>
+          <p class="text-xs text-gray-400">Acompanhe saldos, comissões acumuladas e solicite seus saques em USDT</p>
+        </div>
+        <button onclick="app.openWithdrawModal()" class="px-5 py-2.5 rounded-xl font-bold text-black gold-button-gradient flex items-center gap-2 shadow-lg">
+          <i data-lucide="arrow-up-right" class="w-4 h-4 text-black"></i> Solicitar Saque
+        </button>
+      </div>
+
+      <!-- Financial Breakdown Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        
+        <div class="bg-dark-card border border-dark-border p-5 rounded-xl">
+          <div class="text-xs text-gray-400">Ganhos da Equipe</div>
+          <div id="walletTeamGains" class="text-2xl font-bold text-white mt-1">$0,00</div>
+          <div class="text-[11px] text-gray-500 mt-1">Indicações e Bônus Binário</div>
+        </div>
+
+        <div class="bg-dark-card border border-dark-border p-5 rounded-xl">
+          <div class="text-xs text-gray-400">Rentabilidade Diária</div>
+          <div id="walletDailyGains" class="text-2xl font-bold text-emerald-400 mt-1">$0,00</div>
+          <div class="text-[11px] text-gray-500 mt-1">Ganhos de rendimentos em XAU/USD</div>
+        </div>
+
+        <div class="bg-dark-card border border-dark-border p-5 rounded-xl">
+          <div class="text-xs text-gray-400">Bônus Conquistados</div>
+          <div id="walletBonusGains" class="text-2xl font-bold text-amber-400 mt-1">$0,00</div>
+          <div class="text-[11px] text-gray-500 mt-1">Bônus de 10 indicados</div>
+        </div>
+
+        <div class="bg-dark-card border border-dark-border p-5 rounded-xl">
+          <div class="text-xs text-gray-400">Total de Ganhos Acumulados</div>
+          <div id="walletTotalGains" class="text-2xl font-bold gold-text-gradient mt-1">$0,00</div>
+          <div class="text-[11px] text-gray-500 mt-1">Histórico bruto gerado</div>
+        </div>
+
+        <div class="bg-dark-card border border-dark-border p-5 rounded-xl">
+          <div class="text-xs text-gray-400">Total Sacado</div>
+          <div id="walletTotalWithdrawn" class="text-2xl font-bold text-gray-300 mt-1">$0,00</div>
+          <div class="text-[11px] text-gray-500 mt-1">Saques processados</div>
+        </div>
+
+        <div class="bg-dark-card border border-amber-500/40 p-5 rounded-xl bg-gradient-to-br from-dark-card to-amber-500/5">
+          <div class="text-xs text-amber-400 font-semibold uppercase">Saldo Disponível para Saque</div>
+          <div id="walletAvailable" class="text-3xl font-bold text-emerald-400 mt-1">$0,00</div>
+          <div class="text-[11px] text-gray-400 mt-1">Livre para envio em USDT BEP-20</div>
+        </div>
+
+      </div>
+
+      <!-- Withdrawal Rules Information Card -->
+      <div class="bg-dark-card border border-dark-border rounded-xl p-4 flex items-start gap-3 text-xs text-gray-300">
+        <i data-lucide="shield-check" class="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5"></i>
+        <div>
+          <span class="font-bold text-white block mb-0.5">Regras de Saque da Plataforma:</span>
+          Valor mínimo de saque: <strong class="text-amber-400">$50,00 USD</strong>. Taxa de saque fixa: <strong class="text-amber-400">5%</strong> sobre o valor solicitado. Pagamento realizado exclusivamente através da rede <strong class="text-amber-400">USDT BEP-20</strong>. Certifique-se de cadastrar sua carteira em Configurações.
+        </div>
+      </div>
+
+    </div>
+
+    <!-- VIEW 4: RELATÓRIOS & HISTÓRICO -->
+    <div id="view-reports" class="hidden space-y-6">
+      
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-xl font-bold text-white">Relatório de Movimentações</h2>
+          <p class="text-xs text-gray-400">Histórico detalhado de depósitos, rendimentos, comissões e saques</p>
+        </div>
+        
+        <!-- Filter Pills -->
+        <div class="flex flex-wrap gap-2">
+          <button onclick="app.filterReports('all')" class="report-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500 text-black">Todos</button>
+          <button onclick="app.filterReports('application')" class="report-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-dark-hover text-gray-400 hover:text-white">Aplicações</button>
+          <button onclick="app.filterReports('daily')" class="report-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-dark-hover text-gray-400 hover:text-white">Ganhos</button>
+          <button onclick="app.filterReports('team')" class="report-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-dark-hover text-gray-400 hover:text-white">Equipe</button>
+          <button onclick="app.filterReports('withdraw')" class="report-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-dark-hover text-gray-400 hover:text-white">Saques</button>
+        </div>
+      </div>
+
+      <!-- Transactions Table -->
+      <div class="bg-dark-card border border-dark-border rounded-2xl overflow-hidden shadow-xl">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-dark-hover text-gray-400 uppercase tracking-wider border-b border-dark-border">
+              <tr>
+                <th class="p-4">ID Transação</th>
+                <th class="p-4">Tipo</th>
+                <th class="p-4">Data/Hora</th>
+                <th class="p-4">Valor USD</th>
+                <th class="p-4">Status</th>
+              </tr>
+            </thead>
+            <tbody id="reportsTableBody" class="divide-y divide-dark-border text-gray-300 font-mono">
+              <!-- Dynamically Populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- VIEW 5: CONFIGURAÇÕES & PERFIL -->
+    <div id="view-settings" class="hidden space-y-6">
+      
+      <h2 class="text-xl font-bold text-white">Configurações de Conta</h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <!-- Profile Info -->
+        <div class="bg-dark-card border border-dark-border rounded-2xl p-5 space-y-4">
+          <h3 class="font-bold text-base text-white border-b border-dark-border pb-3 flex items-center gap-2">
+            <i data-lucide="user" class="w-4 h-4 text-amber-400"></i> Perfil do Usuário
+          </h3>
+          
+          <div class="space-y-3 text-xs">
+            <div>
+              <label class="text-gray-400 block mb-1">Nome Completo</label>
+              <input type="text" id="settingName" value="João da Silva" class="w-full bg-dark-bg border border-dark-border rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-amber-500">
+            </div>
+            <div>
+              <label class="text-gray-400 block mb-1">Nome de Usuário (@username)</label>
+              <input type="text" id="settingUsername" value="g7investidor" class="w-full bg-dark-bg border border-dark-border rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-amber-500">
+            </div>
+            <div>
+              <label class="text-gray-400 block mb-1">E-mail</label>
+              <input type="email" id="settingEmail" value="usuario@g7gold.com" class="w-full bg-dark-bg border border-dark-border rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-amber-500">
+            </div>
+            <button onclick="app.saveProfileSettings()" class="w-full py-2.5 rounded-xl font-bold text-xs text-black gold-button-gradient">
+              Salvar Alterações
+            </button>
+          </div>
+        </div>
+
+        <!-- Withdrawal Wallet Register Card -->
+        <div class="bg-dark-card border border-amber-500/30 rounded-2xl p-5 space-y-4">
+          <h3 class="font-bold text-base text-white border-b border-dark-border pb-3 flex items-center gap-2">
+            <i data-lucide="wallet" class="w-4 h-4 text-amber-400"></i> Carteira de Saque (USDT BEP-20)
+          </h3>
+          
+          <div class="space-y-3 text-xs">
+            <p class="text-gray-400">Cadastre o seu endereço de carteira para recebimento dos saques solicitados.</p>
+            <div>
+              <label class="text-amber-400 font-semibold block mb-1">Endereço USDT BEP-20 (Binance Smart Chain)</label>
+              <input type="text" id="settingWalletAddress" placeholder="0x..." class="w-full bg-dark-bg border border-dark-border rounded-xl px-3 py-2.5 text-amber-300 font-mono focus:outline-none focus:border-amber-500">
+            </div>
+            <button onclick="app.saveWalletAddress()" class="w-full py-2.5 rounded-xl font-bold text-xs text-black gold-button-gradient">
+              Salvar Endereço de Carteira
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- VIEW 6: SUPORTE AO VIVO SIMULADO -->
+    <div id="view-support" class="hidden space-y-6">
+      <div class="bg-dark-card border border-dark-border rounded-2xl p-5 max-w-3xl mx-auto shadow-2xl flex flex-col h-[500px]">
+        
+        <!-- Chat Header -->
+        <div class="border-b border-dark-border pb-4 flex justify-between items-center">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 font-bold">
+              <i data-lucide="headphones" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h3 class="font-bold text-white text-sm">Atendimento G7 Gold Invest</h3>
+              <span class="text-[11px] text-emerald-400 flex items-center gap-1 font-semibold">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> Suporte Online 24/7
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Messages Area -->
+        <div id="chatMessages" class="flex-grow my-4 overflow-y-auto space-y-3 pr-2">
+          <div class="flex items-start gap-2">
+            <div class="w-7 h-7 rounded-full gold-bg-gradient text-black flex items-center justify-center font-bold text-[10px]">G7</div>
+            <div class="bg-dark-hover border border-dark-border p-3 rounded-2xl rounded-tl-none max-w-xs text-xs text-gray-200">
+              Olá! Bem-vindo ao suporte G7 Gold Invest. Como podemos te ajudar hoje com suas aplicações em ouro?
+            </div>
+          </div>
+        </div>
+
+        <!-- Chat Input -->
+        <div class="flex gap-2 pt-2 border-t border-dark-border">
+          <input type="text" id="chatInput" placeholder="Digite sua mensagem..." onkeydown="if(event.key==='Enter') app.sendChatMessage()" class="flex-grow bg-dark-bg border border-dark-border rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500">
+          <button onclick="app.sendChatMessage()" class="px-5 py-2.5 rounded-xl font-bold text-black gold-button-gradient text-xs">
+            Enviar
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- MOBILE BOTTOM NAVIGATION BAR -->
+  <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-dark-card border-t border-dark-border z-40 px-3 py-2 flex justify-between items-center shadow-2xl">
+    
+    <!-- Left: Home -->
+    <button onclick="app.navigateTo('home')" id="mob-nav-home" class="flex flex-col items-center gap-1 text-amber-400 text-[10px] font-medium">
+      <i data-lucide="home" class="w-5 h-5"></i> Home
+    </button>
+
+    <!-- Left-Mid: Equipe -->
+    <button onclick="app.navigateTo('team')" id="mob-nav-team" class="flex flex-col items-center gap-1 text-gray-400 hover:text-amber-400 text-[10px] font-medium">
+      <i data-lucide="users" class="w-5 h-5"></i> Equipe
+    </button>
+
+    <!-- Center Highlighted Gold Invest Button -->
+    <div class="relative -top-5">
+      <button onclick="app.openInvestModal()" class="w-14 h-14 rounded-full gold-button-gradient border-2 border-amber-300 flex items-center justify-center text-black font-bold shadow-xl invest-pulse-btn">
+        <i data-lucide="trending-up" class="w-7 h-7 text-black"></i>
+      </button>
+    </div>
+
+    <!-- Right-Mid: Carteira -->
+    <button onclick="app.navigateTo('wallet')" id="mob-nav-wallet" class="flex flex-col items-center gap-1 text-gray-400 hover:text-amber-400 text-[10px] font-medium">
+      <i data-lucide="wallet" class="w-5 h-5"></i> Carteira
+    </button>
+
+    <!-- Right: Relatório -->
+    <button onclick="app.navigateTo('reports')" id="mob-nav-reports" class="flex flex-col items-center gap-1 text-gray-400 hover:text-amber-400 text-[10px] font-medium">
+      <i data-lucide="file-text" class="w-5 h-5"></i> Relatório
+    </button>
+  </nav>
+
+  <!-- MODAL 1: INVESTIR / DEPOSITAR -->
+  <div id="investModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-dark-card border border-amber-500/30 rounded-2xl w-full max-w-md p-6 relative shadow-2xl space-y-4">
+      <button onclick="app.closeInvestModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <div>
+        <h3 class="text-xl font-bold text-white">Investir em XAU/USD</h3>
+        <p class="text-xs text-amber-400 mt-1">Escolha o valor e a rede para a sua aplicação</p>
+      </div>
+
+      <!-- Step 1: Amount -->
+      <div class="space-y-3">
+        <label class="text-xs text-gray-300 block">Valor da Aplicação (Mínimo $100 USD)</label>
+        <div class="relative">
+          <span class="absolute left-3 top-3 text-amber-400 font-bold">$</span>
+          <input type="number" id="investAmountInput" min="100" step="50" value="100" oninput="app.updateInvestPoints()" class="w-full bg-dark-bg border border-dark-border rounded-xl pl-8 pr-4 py-2.5 text-white font-bold text-lg focus:outline-none focus:border-amber-500">
+        </div>
+        <div class="flex justify-between text-xs text-gray-400 bg-dark-hover p-2 rounded-lg border border-dark-border">
+          <span>Pontos Gerados:</span>
+          <strong id="investPointsCalc" class="text-amber-400">100 Pontos (1 USD = 1 Pt)</strong>
+        </div>
+      </div>
+
+      <!-- Currency & Network Selection -->
+      <div class="grid grid-cols-2 gap-3 text-xs">
+        <div>
+          <label class="text-gray-400 block mb-1">Criptomoeda</label>
+          <select id="investCryptoSelect" class="w-full bg-dark-bg border border-dark-border rounded-xl p-2.5 text-white focus:outline-none">
+            <option value="USDT">USDT (Tether)</option>
+            <option value="USDC">USDC Coin</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-gray-400 block mb-1">Rede de Depósito</label>
+          <select id="investNetworkSelect" class="w-full bg-dark-bg border border-dark-border rounded-xl p-2.5 text-white focus:outline-none">
+            <option value="BEP-20">BEP-20 (Binance Smart Chain)</option>
+            <option value="TRC-20">TRC-20 (Tron)</option>
+            <option value="Arbitrum">Arbitrum One</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Simulated Deposit Address Display -->
+      <div class="bg-dark-bg border border-dark-border p-3 rounded-xl text-center space-y-2">
+        <span class="text-[11px] text-gray-400 block">Endereço de Depósito Gerado:</span>
+        <div id="simulatedDepositAddress" class="font-mono text-[11px] text-amber-300 break-all select-all">
+          0x71C7656EC7ab88b098defB751B7401B5f6d8976F
+        </div>
+        <button onclick="app.copyDepositAddress()" class="text-[11px] text-amber-400 hover:underline flex items-center justify-center gap-1 mx-auto">
+          <i data-lucide="copy" class="w-3 h-3"></i> Copiar Endereço
+        </button>
+      </div>
+
+      <!-- Action Button -->
+      <button onclick="app.processSimulatedDeposit()" class="w-full py-3 rounded-xl font-bold text-black gold-button-gradient flex items-center justify-center gap-2 shadow-lg">
+        <i data-lucide="check-circle" class="w-5 h-5 text-black"></i> Confirmar Depósito Simulado
+      </button>
+
+    </div>
+  </div>
+
+  <!-- MODAL 2: SAQUE -->
+  <div id="withdrawModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-dark-card border border-amber-500/30 rounded-2xl w-full max-w-md p-6 relative shadow-2xl space-y-4">
+      <button onclick="app.closeWithdrawModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <div>
+        <h3 class="text-xl font-bold text-white">Solicitar Saque</h3>
+        <p class="text-xs text-amber-400 mt-1">Transferência de ganhos para sua carteira USDT BEP-20</p>
+      </div>
+
+      <div class="space-y-3">
+        <label class="text-xs text-gray-300 block">Valor do Saque (Mínimo $50 USD)</label>
+        <div class="relative">
+          <span class="absolute left-3 top-3 text-emerald-400 font-bold">$</span>
+          <input type="number" id="withdrawAmountInput" min="50" value="50" oninput="app.calculateWithdrawNet()" class="w-full bg-dark-bg border border-dark-border rounded-xl pl-8 pr-4 py-2.5 text-white font-bold text-lg focus:outline-none focus:border-amber-500">
+        </div>
+      </div>
+
+      <!-- Calculation Breakdown -->
+      <div class="bg-dark-bg border border-dark-border p-3 rounded-xl space-y-2 text-xs">
+        <div class="flex justify-between text-gray-400">
+          <span>Taxa da Plataforma (5%):</span>
+          <span id="withdrawFeeDisplay" class="text-red-400">-$2,50</span>
+        </div>
+        <div class="flex justify-between font-bold text-white border-t border-dark-border pt-2">
+          <span>Valor Líquido a Receber:</span>
+          <span id="withdrawNetDisplay" class="text-emerald-400">$47,50 USDT</span>
+        </div>
+      </div>
+
+      <!-- Wallet destination info -->
+      <div class="text-xs bg-dark-hover p-3 rounded-xl border border-dark-border">
+        <span class="text-gray-400 block mb-1">Carteira Cadastrada:</span>
+        <div id="withdrawWalletDest" class="font-mono text-amber-300 text-[11px] truncate">
+          Não cadastrada (Acesse Configurações)
+        </div>
+      </div>
+
+      <button onclick="app.executeWithdrawal()" class="w-full py-3 rounded-xl font-bold text-black gold-button-gradient flex items-center justify-center gap-2 shadow-lg">
+        Confirmar Solicitação de Saque
+      </button>
+    </div>
+  </div>
+
+  <!-- PAINEL DEV / TESTES (FLOATING ACTION DRAWER) -->
+  <div id="devPanel" class="hidden fixed bottom-20 right-4 md:bottom-6 z-50 bg-dark-card border-2 border-amber-500 rounded-2xl p-4 shadow-2xl w-80 space-y-3">
+    <div class="flex justify-between items-center border-b border-dark-border pb-2">
+      <span class="font-bold text-xs text-amber-400 flex items-center gap-1">
+        <i data-lucide="wrench" class="w-4 h-4"></i> Painel de Teste MVP
+      </span>
+      <button onclick="app.toggleDevPanel()" class="text-gray-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
+    </div>
+
+    <div class="space-y-2 text-xs">
+      <button onclick="app.simDailyYield()" class="w-full py-2 bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 rounded-lg border border-emerald-500/30 font-semibold flex items-center justify-center gap-1">
+        <i data-lucide="play" class="w-3.5 h-3.5"></i> Simular Rendimento do Dia (0.33% - 0.50%)
+      </button>
+
+      <button onclick="app.simAddReferral()" class="w-full py-2 bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 rounded-lg border border-blue-500/30 font-semibold flex items-center justify-center gap-1">
+        <i data-lucide="user-plus" class="w-3.5 h-3.5"></i> Simular Novo Indicado ($100)
+      </button>
+
+      <button onclick="app.simAddBinaryPoints()" class="w-full py-2 bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 rounded-lg border border-amber-500/30 font-semibold flex items-center justify-center gap-1">
+        <i data-lucide="git-commit" class="w-3.5 h-3.5"></i> Add Pontos Binários (+300 Pts)
+      </button>
+
+      <button onclick="app.processBinaryPayout()" class="w-full py-2 bg-purple-500/20 text-purple-400 hover:bg-purple-500/30 rounded-lg border border-purple-500/30 font-semibold flex items-center justify-center gap-1">
+        <i data-lucide="zap" class="w-3.5 h-3.5"></i> Processar Bônus Binário (10%)
+      </button>
+
+      <button onclick="app.resetAllData()" class="w-full py-2 bg-red-500/20 text-red-400 hover:bg-red-500/30 rounded-lg border border-red-500/30 font-bold flex items-center justify-center gap-1 mt-2">
+        <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> RESETAR TODOS OS DADOS
+      </button>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION POPUP CONTAINER -->
+  <div id="toastContainer" class="fixed top-20 right-4 z-50 flex flex-col gap-2 max-w-sm pointer-events-none"></div>
+
+  <!-- JAVASCRIPT APP ARCHITECTURE & LOCALSTORAGE SERVICE -->
+  <script>
+    /*
+     * LOCALSTORAGE STORAGE SERVICE (SUPABASE-READY ABSTRACTION LAYER)
+     */
+    const BINARY_PERCENTAGE = 10; // 10% on lesser leg
+
+    const storageService = {
+      KEYS: {
+        USER: 'g7_user',
+        APPLICATIONS: 'g7_applications',
+        TRANSACTIONS: 'g7_transactions',
+        NOTIFICATIONS: 'g7_notifications',
+        TEAM: 'g7_team',
+        BINARY: 'g7_binary',
+        WALLET: 'g7_wallet',
+        SETTINGS: 'g7_settings',
+        LANG: 'g7_language'
+      },
+
+      init() {
+        if (!localStorage.getItem(this.KEYS.USER)) {
+          this.resetToDefaults();
+        }
+      },
+
+      resetToDefaults() {
+        localStorage.setItem(this.KEYS.USER, JSON.stringify({
+          name: 'João da Silva',
+          username: 'g7investidor',
+          email: 'usuario@g7gold.com',
+          sponsor: 'goldmaster',
+          walletAddress: ''
+        }));
+
+        localStorage.setItem(this.KEYS.WALLET, JSON.stringify({
+          dailyGains: 0,
+          teamGains: 0,
+          bonusGains: 0,
+          totalGains: 0,
+          totalWithdrawn: 0,
+          availableWithdraw: 0
+        }));
+
+        localStorage.setItem(this.KEYS.APPLICATIONS, JSON.stringify([]));
+        localStorage.setItem(this.KEYS.TRANSACTIONS, JSON.stringify([]));
+        localStorage.setItem(this.KEYS.NOTIFICATIONS, JSON.stringify([
+          { id: 1, title: 'Bem-vindo à G7 Gold Invest', date: new Date().toLocaleTimeString(), read: false }
+        ]));
+        localStorage.setItem(this.KEYS.TEAM, JSON.stringify({
+          directCount: 0,
+          activeCount: 0,
+          bonusClaimed: false
+        }));
+        localStorage.setItem(this.KEYS.BINARY, JSON.stringify({
+          leftPoints: 0,
+          rightPoints: 0
+        }));
+        localStorage.setItem(this.KEYS.LANG, 'pt');
+      },
+
+      getUser() { return JSON.parse(localStorage.getItem(this.KEYS.USER)); },
+      saveUser(user) { localStorage.setItem(this.KEYS.USER, JSON.stringify(user)); },
+
+      getWallet() { return JSON.parse(localStorage.getItem(this.KEYS.WALLET)); },
+      saveWallet(wallet) { localStorage.setItem(this.KEYS.WALLET, JSON.stringify(wallet)); },
+
+      getApplications() { return JSON.parse(localStorage.getItem(this.KEYS.APPLICATIONS)); },
+      saveApplications(apps) { localStorage.setItem(this.KEYS.APPLICATIONS, JSON.stringify(apps)); },
+
+      getTransactions() { return JSON.parse(localStorage.getItem(this.KEYS.TRANSACTIONS)); },
+      saveTransactions(txs) { localStorage.setItem(this.KEYS.TRANSACTIONS, JSON.stringify(txs)); },
+
+      getNotifications() { return JSON.parse(localStorage.getItem(this.KEYS.NOTIFICATIONS)); },
+      saveNotifications(notes) { localStorage.setItem(this.KEYS.NOTIFICATIONS, JSON.stringify(notes)); },
+
+      getTeam() { return JSON.parse(localStorage.getItem(this.KEYS.TEAM)); },
+      saveTeam(team) { localStorage.setItem(this.KEYS.TEAM, JSON.stringify(team)); },
+
+      getBinary() { return JSON.parse(localStorage.getItem(this.KEYS.BINARY)); },
+      saveBinary(bin) { localStorage.setItem(this.KEYS.BINARY, JSON.stringify(bin)); }
+    };
+
+    const app = {
+      chart: null,
+      currentView: 'home',
+
+      init() {
+        storageService.init();
+        lucide.createIcons();
+        this.renderAll();
+        this.initTradingChart();
+        this.startPriceTickSimulation();
+      },
+
+      navigateTo(view) {
+        this.currentView = view;
+        ['home', 'team', 'wallet', 'reports', 'settings', 'support'].forEach(v => {
+          const el = document.getElementById(`view-${v}`);
+          if (el) el.classList.add('hidden');
+        });
+        const activeView = document.getElementById(`view-${view}`);
+        if (activeView) activeView.classList.remove('hidden');
+
+        // Update Nav Highlights (Desktop)
+        document.querySelectorAll('.nav-link').forEach(btn => {
+          btn.classList.remove('text-amber-400', 'bg-dark-hover');
+          btn.classList.add('text-gray-300');
+        });
+        const activeNav = document.getElementById(`nav-${view}`);
+        if (activeNav) {
+          activeNav.classList.add('text-amber-400', 'bg-dark-hover');
+          activeNav.classList.remove('text-gray-300');
+        }
+
+        // Update Mobile Nav Highlights
+        ['home', 'team', 'wallet', 'reports'].forEach(v => {
+          const mobEl = document.getElementById(`mob-nav-${v}`);
+          if (mobEl) {
+            if (v === view) {
+              mobEl.classList.add('text-amber-400');
+              mobEl.classList.remove('text-gray-400');
+            } else {
+              mobEl.classList.remove('text-amber-400');
+              mobEl.classList.add('text-gray-400');
+            }
+          }
+        });
+
+        this.renderAll();
+      },
+
+      renderAll() {
+        const user = storageService.getUser();
+        const wallet = storageService.getWallet();
+        const apps = storageService.getApplications();
+        const team = storageService.getTeam();
+        const binary = storageService.getBinary();
+        const txs = storageService.getTransactions();
+        const notes = storageService.getNotifications();
+
+        // Render Top Header Profile Info
+        document.getElementById('profileName').innerText = user.name;
+        document.getElementById('profileUsername').innerText = `@${user.username}`;
+        document.getElementById('profileEmail').innerText = user.email;
+        document.getElementById('profileSponsor').innerText = `@${user.sponsor}`;
+        document.getElementById('userAvatarChar').innerText = user.name.charAt(0).toUpperCase();
+
+        // Render Dashboard Financial Stat Cards
+        const todayGainsVal = wallet.dailyGains; // simplified representation
+        document.getElementById('statTodayGains').innerText = `+ $${todayGainsVal.toFixed(2)}`;
+        document.getElementById('statTeamGains').innerText = `$${wallet.teamGains.toFixed(2)}`;
+        document.getElementById('statTotalGains').innerText = `$${wallet.totalGains.toFixed(2)}`;
+        document.getElementById('statAvailableWithdraw').innerText = `$${wallet.availableWithdraw.toFixed(2)}`;
+
+        // Render Wallet View Cards
+        document.getElementById('walletTeamGains').innerText = `$${wallet.teamGains.toFixed(2)}`;
+        document.getElementById('walletDailyGains').innerText = `$${wallet.dailyGains.toFixed(2)}`;
+        document.getElementById('walletBonusGains').innerText = `$${wallet.bonusGains.toFixed(2)}`;
+        document.getElementById('walletTotalGains').innerText = `$${wallet.totalGains.toFixed(2)}`;
+        document.getElementById('walletTotalWithdrawn').innerText = `$${wallet.totalWithdrawn.toFixed(2)}`;
+        document.getElementById('walletAvailable').innerText = `$${wallet.availableWithdraw.toFixed(2)}`;
+
+        // Render Applications
+        this.renderApplications(apps);
+
+        // Render Team & Binary Stats
+        document.getElementById('teamDirectCount').innerText = `${team.directCount} Ativos`;
+        document.getElementById('binaryLeftPoints').innerText = `${binary.leftPoints} Pts`;
+        document.getElementById('binaryRightPoints').innerText = `${binary.rightPoints} Pts`;
+
+        // Render 10-Referral Bonus Card Progress
+        const bonusPct = Math.min((team.activeCount / 10) * 100, 100);
+        document.getElementById('bonusProgressText').innerText = `${team.activeCount} / 10 Ativos`;
+        document.getElementById('bonusProgressBar').style.width = `${bonusPct}%`;
+        
+        const claimBtn = document.getElementById('claimBonusBtn');
+        if (team.activeCount >= 10 && !team.bonusClaimed) {
+          claimBtn.disabled = false;
+          claimBtn.className = 'mt-4 w-full py-2.5 rounded-xl font-bold text-xs gold-button-gradient text-black shadow-lg cursor-pointer';
+          claimBtn.innerText = 'Resgatar Bônus de $100 AGORA!';
+        } else if (team.bonusClaimed) {
+          claimBtn.disabled = true;
+          claimBtn.className = 'mt-4 w-full py-2.5 rounded-xl font-bold text-xs bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
+          claimBtn.innerText = 'Bônus Resgatado com Sucesso! ✓';
+        }
+
+        // Render Settings inputs
+        document.getElementById('settingName').value = user.name;
+        document.getElementById('settingUsername').value = user.username;
+        document.getElementById('settingEmail').value = user.email;
+        document.getElementById('settingWalletAddress').value = user.walletAddress || '';
+        document.getElementById('withdrawWalletDest').innerText = user.walletAddress || 'Não cadastrada (Acesse Configurações)';
+
+        // Render Reports Table
+        this.renderReports(txs);
+
+        // Render Notifications
+        this.renderNotifications(notes);
+      },
+
+      renderApplications(apps) {
+        const container = document.getElementById('applicationsContainer');
+        if (!container) return;
+
+        if (apps.length === 0) {
+          container.innerHTML = `
+            <div class="col-span-full bg-dark-card border border-dark-border rounded-xl p-8 text-center text-gray-400 space-y-3">
+              <i data-lucide="inbox" class="w-10 h-10 mx-auto text-amber-500/40"></i>
+              <p class="text-sm font-medium">Nenhuma aplicação ativa no momento.</p>
+              <button onclick="app.openInvestModal()" class="px-4 py-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded-xl text-xs font-bold inline-flex items-center gap-1">
+                <i data-lucide="plus" class="w-4 h-4"></i> Realizar Primeira Aplicação
+              </button>
+            </div>
+          `;
+          lucide.createIcons();
+          return;
+        }
+
+        container.innerHTML = apps.map(app => {
+          const targetGains = app.amount * 2; // double capital (200%)
+          const progressPct = Math.min((app.accumulatedGains / app.amount) * 100, 100).toFixed(2);
+          const isCompleted = app.accumulatedGains >= app.amount;
+
+          return `
+            <div class="gold-border-card p-4 space-y-3">
+              <div class="flex justify-between items-center border-b border-dark-border pb-2">
+                <span class="font-mono text-xs text-amber-400 font-bold">${app.id}</span>
+                <span class="text-[10px] px-2 py-0.5 rounded-full ${isCompleted ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'} font-semibold">
+                  ${isCompleted ? 'Ciclo Concluído 🎉' : 'Aplicação Ativa'}
+                </span>
+              </div>
+
+              <div class="grid grid-cols-2 gap-2 text-xs">
+                <div>
+                  <span class="text-gray-400 block text-[10px]">Capital Aplicado</span>
+                  <strong class="text-white text-sm">$${app.amount.toFixed(2)}</strong>
+                </div>
+                <div>
+                  <span class="text-gray-400 block text-[10px]">Ganho Acumulado</span>
+                  <strong class="text-emerald-400 text-sm">$${app.accumulatedGains.toFixed(2)}</strong>
+                </div>
+                <div>
+                  <span class="text-gray-400 block text-[10px]">Rentabilidade Atual</span>
+                  <strong class="text-amber-400">${app.dailyRate}% / dia</strong>
+                </div>
+                <div>
+                  <span class="text-gray-400 block text-[10px]">Meta do Ciclo</span>
+                  <strong class="text-gray-300">$${targetGains.toFixed(2)}</strong>
+                </div>
+              </div>
+
+              <!-- Progress Bar -->
+              <div class="space-y-1 pt-1">
+                <div class="flex justify-between text-[11px] text-gray-400 font-mono">
+                  <span>Progresso do Ciclo</span>
+                  <span class="text-amber-400 font-bold">${progressPct}%</span>
+                </div>
+                <div class="w-full h-2.5 bg-dark-bg rounded-full overflow-hidden border border-dark-border">
+                  <div class="h-full gold-bg-gradient rounded-full shadow-lg" style="width: ${progressPct}%"></div>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+        lucide.createIcons();
+      },
+
+      renderReports(txs) {
+        const body = document.getElementById('reportsTableBody');
+        if (!body) return;
+
+        if (txs.length === 0) {
+          body.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-500">Nenhuma movimentação registrada.</td></tr>`;
+          return;
+        }
+
+        body.innerHTML = txs.map(tx => `
+          <tr class="hover:bg-dark-hover transition">
+            <td class="p-4 text-amber-400 font-bold">${tx.id}</td>
+            <td class="p-4">${tx.type}</td>
+            <td class="p-4 text-gray-400">${tx.date}</td>
+            <td class="p-4 font-bold ${tx.amount < 0 ? 'text-red-400' : 'text-emerald-400'}">
+              ${tx.amount < 0 ? '-' : '+'}$${Math.abs(tx.amount).toFixed(2)}
+            </td>
+            <td class="p-4"><span class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">${tx.status}</span></td>
+          </tr>
+        `).join('');
+      },
+
+      initTradingChart() {
+        const ctx = document.getElementById('xauChartCanvas').getContext('2d');
+        
+        // Initial price data points for XAU/USD
+        const labels = Array.from({length: 20}, (_, i) => `${i + 1}m`);
+        const dataPoints = [2740, 2742, 2741, 2744, 2743, 2746, 2745, 2747, 2746, 2748, 2747, 2749, 2748, 2750, 2749, 2751, 2750, 2752, 2751, 2753];
+
+        this.chart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'XAU/USD',
+              data: dataPoints,
+              borderColor: '#EAB308',
+              borderWidth: 2,
+              tension: 0.3,
+              fill: true,
+              backgroundColor: (context) => {
+                const bgCtx = context.chart.ctx;
+                const gradient = bgCtx.createLinearGradient(0, 0, 0, 300);
+                gradient.addColorStop(0, 'rgba(234, 179, 8, 0.3)');
+                gradient.addColorStop(1, 'rgba(234, 179, 8, 0.0)');
+                return gradient;
+              },
+              pointRadius: 2,
+              pointHoverRadius: 5
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { grid: { color: '#1E2638' }, ticks: { color: '#6B7280' } },
+              y: { grid: { color: '#1E2638' }, ticks: { color: '#6B7280' } }
+            }
+          }
+        });
+      },
+
+      startPriceTickSimulation() {
+        setInterval(() => {
+          if (!this.chart) return;
+          const currentData = this.chart.data.datasets[0].data;
+          const lastPrice = currentData[currentData.length - 1];
+          const delta = (Math.random() - 0.48) * 1.5;
+          const newPrice = Math.max(2700, +(lastPrice + delta).toFixed(2));
+
+          currentData.shift();
+          currentData.push(newPrice);
+          this.chart.update('none');
+
+          document.getElementById('chartLivePrice').innerText = `$${newPrice.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+        }, 3000);
+      },
+
+      openInvestModal() { document.getElementById('investModal').classList.remove('hidden'); },
+      closeInvestModal() { document.getElementById('investModal').classList.add('hidden'); },
+
+      updateInvestPoints() {
+        const val = parseFloat(document.getElementById('investAmountInput').value) || 0;
+        document.getElementById('investPointsCalc').innerText = `${val} Pontos (1 USD = 1 Pt)`;
+      },
+
+      processSimulatedDeposit() {
+        const amount = parseFloat(document.getElementById('investAmountInput').value);
+        if (amount < 100) {
+          this.showToast('Valor mínimo de aplicação é de $100 USD.', 'error');
+          return;
+        }
+
+        const apps = storageService.getApplications();
+        const txs = storageService.getTransactions();
+        const notes = storageService.getNotifications();
+
+        const newApp = {
+          id: `#G7-${String(apps.length + 1).padStart(4, '0')}`,
+          amount: amount,
+          points: amount,
+          dailyRate: +(0.33 + Math.random() * 0.17).toFixed(2), // 0.33% to 0.50%
+          accumulatedGains: 0,
+          date: new Date().toLocaleDateString('pt-BR'),
+          status: 'Ativa'
+        };
+
+        apps.unshift(newApp);
+        storageService.saveApplications(apps);
+
+        // Record Transaction
+        txs.unshift({
+          id: `TX-${Math.floor(100000 + Math.random() * 900000)}`,
+          type: 'Depósito / Aplicação',
+          date: new Date().toLocaleString('pt-BR'),
+          amount: amount,
+          status: 'Confirmado'
+        });
+        storageService.saveTransactions(txs);
+
+        // Add Notification
+        notes.unshift({
+          id: Date.now(),
+          title: `Aplicação de $${amount} em XAU/USD confirmada!`,
+          date: new Date().toLocaleTimeString('pt-BR'),
+          read: false
+        });
+        storageService.saveNotifications(notes);
+
+        this.closeInvestModal();
+        this.renderAll();
+        this.showToast('Aplicação simulada criada com sucesso!', 'success');
+      },
+
+      simDailyYield() {
+        const apps = storageService.getApplications();
+        if (apps.length === 0) {
+          this.showToast('Você precisa ter pelo menos 1 aplicação ativa para gerar rendimento.', 'error');
+          return;
+        }
+
+        const wallet = storageService.getWallet();
+        let totalGainToday = 0;
+
+        apps.forEach(app => {
+          if (app.accumulatedGains < app.amount) { // until double capital
+            const gain = app.amount * (app.dailyRate / 100);
+            app.accumulatedGains += gain;
+            totalGainToday += gain;
+          }
+        });
+
+        storageService.saveApplications(apps);
+
+        wallet.dailyGains += totalGainToday;
+        wallet.totalGains += totalGainToday;
+        wallet.availableWithdraw += totalGainToday;
+        storageService.saveWallet(wallet);
+
+        // Record TX
+        const txs = storageService.getTransactions();
+        txs.unshift({
+          id: `TX-${Math.floor(100000 + Math.random() * 900000)}`,
+          type: 'Rendimento Diário XAU/USD',
+          date: new Date().toLocaleString('pt-BR'),
+          amount: totalGainToday,
+          status: 'Creditado'
+        });
+        storageService.saveTransactions(txs);
+
+        this.renderAll();
+        this.showToast(`Rendimento diário de +$${totalGainToday.toFixed(2)} creditado!`, 'success');
+      },
+
+      simAddReferral() {
+        const team = storageService.getTeam();
+        const wallet = storageService.getWallet();
+        const txs = storageService.getTransactions();
+
+        team.directCount += 1;
+        team.activeCount += 1;
+        storageService.saveTeam(team);
+
+        // 5% level 1 direct bonus on $100 app
+        const comm = 100 * 0.05;
+        wallet.teamGains += comm;
+        wallet.totalGains += comm;
+        wallet.availableWithdraw += comm;
+        storageService.saveWallet(wallet);
+
+        txs.unshift({
+          id: `TX-${Math.floor(100000 + Math.random() * 900000)}`,
+          type: 'Comissão de Indicação Direta (5%)',
+          date: new Date().toLocaleString('pt-BR'),
+          amount: comm,
+          status: 'Creditado'
+        });
+        storageService.saveTransactions(txs);
+
+        this.renderAll();
+        this.showToast('Novo indicado simulado! Comisão de 5% ($5) creditada.', 'success');
+      },
+
+      simAddBinaryPoints() {
+        const binary = storageService.getBinary();
+        binary.leftPoints += 300;
+        binary.rightPoints += 500;
+        storageService.saveBinary(binary);
+        this.renderAll();
+        this.showToast('Pontos binários adicionados (+300 Esquerda, +500 Direita)', 'success');
+      },
+
+      processBinaryPayout() {
+        const binary = storageService.getBinary();
+        const lesserLeg = Math.min(binary.leftPoints, binary.rightPoints);
+
+        if (lesserLeg <= 0) {
+          this.showToast('Pontos insuficientes na menor perna para processar o binário.', 'error');
+          return;
+        }
+
+        const payout = lesserLeg * (BINARY_PERCENTAGE / 100);
+        binary.leftPoints -= lesserLeg;
+        binary.rightPoints -= lesserLeg;
+        storageService.saveBinary(binary);
+
+        const wallet = storageService.getWallet();
+        wallet.teamGains += payout;
+        wallet.totalGains += payout;
+        wallet.availableWithdraw += payout;
+        storageService.saveWallet(wallet);
+
+        const txs = storageService.getTransactions();
+        txs.unshift({
+          id: `TX-${Math.floor(100000 + Math.random() * 900000)}`,
+          type: `Bônus Binário (${BINARY_PERCENTAGE}% Menor Perna)`,
+          date: new Date().toLocaleString('pt-BR'),
+          amount: payout,
+          status: 'Creditado'
+        });
+        storageService.saveTransactions(txs);
+
+        this.renderAll();
+        this.showToast(`Bônus Binário de +$${payout.toFixed(2)} pago com sucesso!`, 'success');
+      },
+
+      claimTeamBonus() {
+        const team = storageService.getTeam();
+        if (team.activeCount >= 10 && !team.bonusClaimed) {
+          team.bonusClaimed = true;
+          storageService.saveTeam(team);
+
+          const wallet = storageService.getWallet();
+          wallet.bonusGains += 100;
+          wallet.totalGains += 100;
+          wallet.availableWithdraw += 100;
+          storageService.saveWallet(wallet);
+
+          this.renderAll();
+          this.showToast('Bônus de $100 resgatado com sucesso!', 'success');
+        }
+      },
+
+      openWithdrawModal() { document.getElementById('withdrawModal').classList.remove('hidden'); },
+      closeWithdrawModal() { document.getElementById('withdrawModal').classList.add('hidden'); },
+
+      calculateWithdrawNet() {
+        const amt = parseFloat(document.getElementById('withdrawAmountInput').value) || 0;
+        const fee = amt * 0.05;
+        const net = Math.max(0, amt - fee);
+
+        document.getElementById('withdrawFeeDisplay').innerText = `-$${fee.toFixed(2)}`;
+        document.getElementById('withdrawNetDisplay').innerText = `$${net.toFixed(2)} USDT`;
+      },
+
+      executeWithdrawal() {
+        const user = storageService.getUser();
+        if (!user.walletAddress) {
+          this.showToast('Cadastre sua carteira de saque em Configurações antes de solicitar o saque!', 'error');
+          return;
+        }
+
+        const amt = parseFloat(document.getElementById('withdrawAmountInput').value);
+        const wallet = storageService.getWallet();
+
+        if (amt < 50) {
+          this.showToast('O valor mínimo para saque é de $50 USD.', 'error');
+          return;
+        }
+
+        if (amt > wallet.availableWithdraw) {
+          this.showToast('Saldo disponível insuficiente para realizar este saque.', 'error');
+          return;
+        }
+
+        wallet.availableWithdraw -= amt;
+        wallet.totalWithdrawn += amt;
+        storageService.saveWallet(wallet);
+
+        const txs = storageService.getTransactions();
+        txs.unshift({
+          id: `TX-${Math.floor(100000 + Math.random() * 900000)}`,
+          type: 'Solicitação de Saque USDT BEP-20',
+          date: new Date().toLocaleString('pt-BR'),
+          amount: -amt,
+          status: 'Processando'
+        });
+        storageService.saveTransactions(txs);
+
+        this.closeWithdrawModal();
+        this.renderAll();
+        this.showToast('Saque solicitado com sucesso!', 'success');
+      },
+
+      saveProfileSettings() {
+        const user = storageService.getUser();
+        user.name = document.getElementById('settingName').value;
+        user.username = document.getElementById('settingUsername').value;
+        user.email = document.getElementById('settingEmail').value;
+        storageService.saveUser(user);
+        this.renderAll();
+        this.showToast('Dados de perfil salvos com sucesso!', 'success');
+      },
+
+      saveWalletAddress() {
+        const user = storageService.getUser();
+        user.walletAddress = document.getElementById('settingWalletAddress').value;
+        storageService.saveUser(user);
+        this.renderAll();
+        this.showToast('Endereço de carteira USDT BEP-20 atualizado!', 'success');
+      },
+
+      sendChatMessage() {
+        const input = document.getElementById('chatInput');
+        const text = input.value.trim();
+        if (!text) return;
+
+        const chatBox = document.getElementById('chatMessages');
+        chatBox.innerHTML += `
+          <div class="flex items-start gap-2 justify-end">
+            <div class="bg-amber-500/20 border border-amber-500/30 p-3 rounded-2xl rounded-tr-none max-w-xs text-xs text-white">
+              ${text}
+            </div>
+          </div>
+        `;
+        input.value = '';
+
+        setTimeout(() => {
+          chatBox.innerHTML += `
+            <div class="flex items-start gap-2">
+              <div class="w-7 h-7 rounded-full gold-bg-gradient text-black flex items-center justify-center font-bold text-[10px]">G7</div>
+              <div class="bg-dark-hover border border-dark-border p-3 rounded-2xl rounded-tl-none max-w-xs text-xs text-gray-200">
+                Obrigado pelo contato! Um atendente especializado em XAU/USD responderá em instantes.
+              </div>
+            </div>
+          `;
+          chatBox.scrollTop = chatBox.scrollHeight;
+        }, 1000);
+
+        chatBox.scrollTop = chatBox.scrollHeight;
+      },
+
+      copyRefLink() {
+        const input = document.getElementById('refLinkInput');
+        navigator.clipboard.writeText(input.value);
+        document.getElementById('copyBtnText').innerText = 'Copiado!';
+        this.showToast('Link de indicação copiado para a área de transferência!', 'success');
+        setTimeout(() => { document.getElementById('copyBtnText').innerText = 'Copiar'; }, 3000);
+      },
+
+      copyDepositAddress() {
+        const addr = document.getElementById('simulatedDepositAddress').innerText.trim();
+        navigator.clipboard.writeText(addr);
+        this.showToast('Endereço de depósito copiado!', 'success');
+      },
+
+      toggleDevPanel() { document.getElementById('devPanel').classList.toggle('hidden'); },
+      toggleLangMenu() { document.getElementById('langDropdown').classList.toggle('hidden'); },
+      toggleNotifications() { document.getElementById('notifDropdown').classList.toggle('hidden'); },
+      toggleProfileMenu() { document.getElementById('profileDropdown').classList.toggle('hidden'); },
+      toggleMobileMenu() { this.navigateTo('settings'); },
+
+      setLanguage(lang) {
+        document.getElementById('langDropdown').classList.add('hidden');
+        this.showToast(`Idioma alterado para: ${lang.toUpperCase()}`, 'success');
+      },
+
+      renderNotifications(notes) {
+        const badge = document.getElementById('notifBadge');
+        const list = document.getElementById('notifList');
+
+        badge.innerText = notes.length;
+        badge.classList.toggle('hidden', notes.length === 0);
+
+        if (notes.length === 0) {
+          list.innerHTML = `<div class="p-4 text-center text-xs text-gray-500">Sem notificações</div>`;
+          return;
+        }
+
+        list.innerHTML = notes.map(n => `
+          <div class="p-3 text-xs hover:bg-dark-hover transition">
+            <div class="font-semibold text-gray-200">${n.title}</div>
+            <div class="text-[10px] text-gray-500 mt-1">${n.date}</div>
+          </div>
+        `).join('');
+      },
+
+      clearNotifications() {
+        storageService.saveNotifications([]);
+        this.renderAll();
+      },
+
+      resetAllData() {
+        if (confirm('Tem certeza que deseja apagar todos os dados de teste e resetar o sistema?')) {
+          storageService.resetToDefaults();
+          this.renderAll();
+          this.showToast('Todos os dados foram resetados com sucesso!', 'success');
+        }
+      },
+
+      showToast(msg, type = 'info') {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = `p-3 rounded-xl text-xs font-semibold shadow-2xl flex items-center gap-2 pointer-events-auto border transition-all duration-300 ${
+          type === 'success' ? 'bg-emerald-950 text-emerald-300 border-emerald-500/40' : 'bg-red-950 text-red-300 border-red-500/40'
+        }`;
+        toast.innerHTML = `<i data-lucide="${type === 'success' ? 'check-circle' : 'alert-circle'}" class="w-4 h-4"></i> ${msg}`;
+        container.appendChild(toast);
+        lucide.createIcons();
+
+        setTimeout(() => {
+          toast.style.opacity = '0';
+          setTimeout(() => toast.remove(), 300);
+        }, 3000);
+      }
+    };
+
+    // Initialize App on Window Load
+    window.onload = () => {
+      app.init();
+    };
+  </script>
+</body>
+</html>
