@@ -1,6 +1,9 @@
 (function (global) {
   'use strict';
 
+  var _i18n = global.i18n;
+  var _t = function(k,v){ return _i18n && typeof _i18n.t==='function' ? _i18n.t(k,v) : k; };
+
   var _C = global.CONTRACTS || {};
   var EV = _C.EVENTS || {};
   var WL = _C.WALLET || { INVEST_MIN: 100 };
@@ -29,7 +32,7 @@
       var out = el('investPointsCalc');
       if (!inp || !out) return;
       var val = parseFloat(inp.value) || 0;
-      out.textContent = val + ' Pontos (1 USD = 1 Pt)';
+      out.textContent = _t('invest_points_label') + ' ' + val + ' Pontos (1 USD = 1 Pt)';
     },
 
     copyDepositAddress: function () {
@@ -37,7 +40,7 @@
       if (!addrEl || !this.ui) return;
       var addr = (addrEl.textContent || '').trim();
       this.ui.copyToClipboard(addr);
-      this.ui.showToast('Endereço de depósito copiado!', 'success');
+      this.ui.showToast(_t('team_copy_ok'), 'success');
     },
 
     processSimulatedDeposit: function () {
@@ -46,7 +49,7 @@
       if (!input) return;
       var amount = parseFloat(input.value) || 0;
       if (amount < (WL.INVEST_MIN || 100)) {
-        this.ui.showToast('Valor mínimo de aplicação é de $100 USD.', 'error');
+        this.ui.showToast('invest_min_error' in (_i18n && _i18n.getDictionary ? (_i18n.getDictionary() || {}) : {}) ? _t('invest_min_error', {min: WL.INVEST_MIN || 100}) : 'Valor mínimo de aplicação é de $100 USD.', 'error');
         return;
       }
 
@@ -89,7 +92,7 @@
       this.bus.emit(EV.TRANSACTION_ADDED);
       this.bus.emit(EV.NOTIFICATION_ADDED);
       this.bus.emit(EV.RENDER_REQUIRED);
-      this.ui.showToast('Aplicação simulada criada com sucesso!', 'success');
+      this.ui.showToast(_t('invest_ok'), 'success');
     }
   };
 

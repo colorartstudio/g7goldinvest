@@ -37,6 +37,9 @@
     KEYS: KEYS,
 
     init: function () {
+      if (KEYS.LANG && !localStorage.getItem(KEYS.LANG)) {
+        setJSON(KEYS.LANG, 'pt');
+      }
       var needReset = false;
       if (!localStorage.getItem(KEYS.USER)) needReset = true;
       if (KEYS.TREE && !localStorage.getItem(KEYS.TREE)) needReset = true;
@@ -58,6 +61,7 @@
     },
 
     resetToDefaults: function () {
+      setJSON(KEYS.LANG, 'pt');
       setJSON(KEYS.USER, {
         name: 'João da Silva',
         username: 'g7investidor',
@@ -126,7 +130,23 @@
     saveTree: function (tree) { return KEYS.TREE ? setJSON(KEYS.TREE, tree) : false; },
 
     getTreeFocus: function () { return KEYS.TREE_FOCUS ? getJSON(KEYS.TREE_FOCUS) : { focusNodeId: 'eu' }; },
-    saveTreeFocus: function (focus) { return KEYS.TREE_FOCUS ? setJSON(KEYS.TREE_FOCUS, focus) : false; }
+    saveTreeFocus: function (focus) { return KEYS.TREE_FOCUS ? setJSON(KEYS.TREE_FOCUS, focus) : false; },
+
+    getLanguage: function () {
+      try {
+        var raw = localStorage.getItem(KEYS.LANG);
+        if (!raw) return 'pt';
+        if (raw.charAt(0) === '{' || raw.charAt(0) === '[') {
+          var p = JSON.parse(raw);
+          if (p && typeof p === 'object') return p.lang || String(p) || 'pt';
+        }
+        return String(raw).replace(/['"]+/g, '').toLowerCase().slice(0, 2);
+      } catch (e) { return 'pt'; }
+    },
+    saveLanguage: function (code) {
+      try { localStorage.setItem(KEYS.LANG, String(code)); return true; }
+      catch (e) { return false; }
+    }
   };
 
   global.storageService = storageService;

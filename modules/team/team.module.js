@@ -4,6 +4,8 @@
   var _C = global.CONTRACTS || {};
   var EV = _C.EVENTS || {};
   var TEAM_CFG = _C.TEAM || {};
+  var _i18n = global.i18n;
+  var _t = function(k,v){ return _i18n && typeof _i18n.t==='function' ? _i18n.t(k,v) : k; };
 
   function el(id) { return document.getElementById(id); }
   function fmt(v) { return global.ui && global.ui.formatCurrency ? global.ui.formatCurrency(v) : ('$' + Number(v || 0).toFixed(2)); }
@@ -82,7 +84,7 @@
     focusNode: function (nodeId) {
       if (!nodeId || !this.tEng || !this.currentTree) return;
       var target = this.tEng.findNodeById(this.currentTree, nodeId);
-      if (!target) { showToast('Usuário não encontrado na rede', 'error'); return; }
+      if (!target) { showToast(_t('tree_user_not_found'), 'error'); return; }
       this.currentFocusId = nodeId;
       if (this.storage) this.storage.saveTreeFocus({ focusNodeId: nodeId });
       if (this.bus) this.bus.emit(EV.TREE_FOCUS_CHANGED || 'team:tree-focus-changed', { nodeId: nodeId });
@@ -92,7 +94,7 @@
     goBackToParent: function () {
       if (!this.tEng || !this.currentTree) return;
       var parent = this.tEng.findParentNode(this.currentTree, this.currentFocusId);
-      if (!parent) { showToast('Você já está na raiz (Eu)', 'info'); return; }
+      if (!parent) { showToast(_t('tree_already_root'), 'info'); return; }
       this.focusNode(parent.id);
     },
 
@@ -106,7 +108,7 @@
       if (!query || !this.tEng || !this.currentTree) { box.classList.remove('open'); box.innerHTML = ''; return; }
       var list = this.tEng.searchNodes(this.currentTree, query).slice(0, 8);
       if (list.length === 0) {
-        box.innerHTML = '<div class="sr-empty">Nenhum usuário encontrado</div>';
+        box.innerHTML = '<div class="sr-empty">' + _t('tree_search_empty') + '</div>';
         box.classList.add('open');
         return;
       }
@@ -138,15 +140,15 @@
 
       var posClass = empty ? 'pos-empty' : (node.level === 0 ? 'pos-root' : (node.position === 'L' || String(node.position).endsWith('L') ? 'pos-left' : 'pos-right'));
 
-      var caret = hasChildren && !empty ? '<span class="caret" title="Ver rede abaixo">↧</span>' : '';
+      var caret = hasChildren && !empty ? '<span class="caret" title="' + _t('tree_nav_tip') + '">↧</span>' : '';
       var tooltip = empty ? '' : (
         '<div class="binary-tooltip" style="display:none;" id="tip-' + esc(node.id) + '">' +
           '<div><strong>' + esc(node.name) + '</strong></div>' +
           '<div style="font-family:monospace;font-size:0.7rem;opacity:0.8;">@' + esc(node.username || '') + '</div>' +
-          '<div style="margin-top:0.25rem;">Investimento: <strong>' + fmt(node.amount) + '</strong></div>' +
-          (node.points ? '<div>Pts E: ' + esc(node.points.left || 0) + ' · D: ' + esc(node.points.right || 0) + '</div>' : '') +
+          '<div style="margin-top:0.25rem;">' + _t('tooltip_invest') + ': <strong>' + fmt(node.amount) + '</strong></div>' +
+          (node.points ? '<div>' + _t('tooltip_pts_e') + ': ' + esc(node.points.left || 0) + ' · ' + _t('tooltip_pts_d') + ': ' + esc(node.points.right || 0) + '</div>' : '') +
           (qual ? '<div style="margin-top:0.35rem;color:' + (qual.qualified ? '#10B981' : '#F59E0B') + ';">' + esc(qual.text) + '</div>' : '') +
-          (node.joinedAt ? '<div style="margin-top:0.25rem;opacity:0.6;">Entrada: ' + esc(node.joinedAt) + '</div>' : '') +
+          (node.joinedAt ? '<div style="margin-top:0.25rem;opacity:0.6;">' + _t('tooltip_joined') + ': ' + esc(node.joinedAt) + '</div>' : '') +
         '</div>'
       );
 
@@ -232,16 +234,16 @@
         var btnRoot = el('team-btn-root');
         if (btnRoot) btnRoot.disabled = self.currentFocusId === (self.currentTree && self.currentTree.id);
       }
-      if (!focus) { box.innerHTML = '<div style="padding:2rem;text-align:center;color:#6B7280;">Sem dados da árvore</div>'; return; }
+      if (!focus) { box.innerHTML = '<div style="padding:2rem;text-align:center;color:#6B7280;">' + _t('tree_dismiss_tooltip') + '</div>'; return; }
       var qInfo = this.eng ? this.eng.getQualificationStatus(focus) : null;
       var qLegs = this.tEng ? this.tEng.getDirectLegStatus(focus) : { leftActive: false, rightActive: false };
       var qualBox = el('team-qualification-badge');
       if (qualBox && qInfo) {
         qualBox.className = 'qualification-badge ' + (qInfo.qualified ? 'qualified' : 'not-qualified') + ' legs';
         qualBox.innerHTML =
-          '<span>' + (qInfo.qualified ? '✅ Qualificado' : '⚠️ Em qualificação') + '</span>' +
-          '<span class="leg-pill left ' + (qLegs.leftActive ? 'ok' : 'no') + '">Esq' + (qLegs.leftActive ? ' ✓' : '') + '</span>' +
-          '<span class="leg-pill right ' + (qLegs.rightActive ? 'ok' : 'no') + '">Dir' + (qLegs.rightActive ? ' ✓' : '') + '</span>';
+          '<span>' + (qInfo.qualified ? '✅ ' + _t('tree_qual_qualified') : '⚠️ ' + _t('tree_qual_not')) + '</span>' +
+          '<span class="leg-pill left ' + (qLegs.leftActive ? 'ok' : 'no') + '">' + _t('tree_leg_left_pill') + (qLegs.leftActive ? ' ' + _t('legs_ok_short') : '') + '</span>' +
+          '<span class="leg-pill right ' + (qLegs.rightActive ? 'ok' : 'no') + '">' + _t('tree_leg_right_pill') + (qLegs.rightActive ? ' ' + _t('legs_ok_short') : '') + '</span>';
         qualBox.title = qInfo.text;
       }
       box.innerHTML = '<div class="tree-wrapper">' + this.buildTreeNodeHTML(focus) + '</div>';
@@ -258,22 +260,22 @@
       var rgr = el('team-greater-leg'); if (rgr) rgr.textContent = fmt(stats.greaterLeg);
       var rbp = el('team-binary-pending'); if (rbp) rbp.textContent = fmt(stats.pendingBinaryPayout);
       var rpt = el('team-payout-type');
-      if (rpt) rpt.textContent = stats.payoutMode === 'FIXED' ? ('$' + Number(stats.fixedPayoutAmount || 0).toFixed(0) + ' fixos por rodada') : (Number((stats.eng && stats.eng.CONFIG && stats.eng.CONFIG.BINARY_PERCENTAGE) || TEAM_CFG.BINARY_PERCENTAGE || 0.10) * 100 + '% menor perna');
+      if (rpt) rpt.textContent = stats.payoutMode === 'FIXED' ? _t('tree_payout_fixed') : (Number((stats.eng && stats.eng.CONFIG && stats.eng.CONFIG.BINARY_PERCENTAGE) || TEAM_CFG.BINARY_PERCENTAGE || 0.10) * 100 + '% menor perna');
       var rpk = el('team-payout-skip');
       if (rpk) {
         if (!stats.payoutSkipped) { rpk.style.display = 'none'; }
         else {
           rpk.style.display = '';
-          rpk.textContent = stats.payoutSkipReason === 'NOT_QUALIFIED' ? 'Binário bloqueado: complete a qualificação primeiro' : 'Sem pontos suficientes para rodar';
+          rpk.textContent = stats.payoutSkipReason === 'NOT_QUALIFIED' ? _t('tree_payout_skip_noqual') : _t('tree_payout_skip_nopts');
         }
       }
       var prog = stats.bonusProgress || {};
       var bp = el('team-bonus-progress'); if (bp) bp.style.width = prog.percentage + '%';
       var bpt = el('team-bonus-progress-text');
-      if (bpt) bpt.textContent = prog.activeCount + ' / ' + prog.target + ' ativos · Bônus ' + fmt(prog.bonusAmount);
+      if (bpt) bpt.textContent = prog.activeCount + ' / ' + prog.target + ' ' + _t('team_assets') + ' · ' + _t('team_bonus_amount') + ' ' + fmt(prog.bonusAmount);
 
       var btnClaim = el('team-btn-claim-bonus');
-      if (btnClaim) { btnClaim.disabled = !prog.eligible; btnClaim.textContent = prog.claimed ? 'Bônus resgatado' : (prog.eligible ? 'Resgatar Bônus de 10 Indicados' : ('Bloqueado: ' + prog.activeCount + '/' + prog.target)); }
+      if (btnClaim) { btnClaim.disabled = !prog.eligible; btnClaim.textContent = prog.claimed ? _t('team_bonus_claimed') : (prog.eligible ? _t('team_bonus_claim_btn') : (_t('team_bonus_locked') + ': ' + prog.activeCount + '/' + prog.target)); }
 
       this.renderTree();
     },
@@ -283,12 +285,12 @@
       var uname = u && u.username ? u.username : 'g7investidor';
       var url = 'https://g7goldinvest.com/signup?ref=' + encodeURIComponent(uname);
       var ok = copyClip(url);
-      showToast(ok ? 'Link de indicação copiado!' : 'Erro ao copiar link', ok ? 'success' : 'error');
+      showToast(ok ? _t('team_copy_ok') : _t('team_copy_err'), ok ? 'success' : 'error');
     },
 
     claimTeamBonus: function () {
       var stats = this.getStats();
-      if (!stats || !stats.bonusProgress || !stats.bonusProgress.eligible) { showToast('Bônus ainda não liberado', 'error'); return; }
+      if (!stats || !stats.bonusProgress || !stats.bonusProgress.eligible) { showToast(_t('team_bonus_not_eligible'), 'error'); return; }
       var team = this.storage.getTeam() || {};
       team.bonusClaimed = true;
       this.storage.saveTeam(team);
@@ -302,7 +304,7 @@
         this.bus.emit(EV.WALLET_UPDATED, wall);
         this.bus.emit(EV.RENDER_REQUIRED);
       }
-      showToast('Bônus de R$100 creditado!', 'success');
+      showToast(_t('team_bonus_claim_ok'), 'success');
     },
 
     simAddReferral: function () {
@@ -315,7 +317,7 @@
       var b2 = this.eng.addBinaryPoints(bin, side, pts);
       this.storage.saveBinary(b2);
       if (this.bus) { this.bus.emit(EV.REFERRAL_ADDED, { side: side, amount: pts }); this.bus.emit(EV.RENDER_REQUIRED); }
-      showToast('Indicado simulado adicionado na ' + (side === 'left' ? 'Esquerda' : 'Direita') + ' com ' + fmt(pts), 'success');
+      showToast((side === 'left' ? _t('dev_referral_added_left') : _t('dev_referral_added_right')) + ' ' + fmt(pts), 'success');
     },
 
     simAddBinaryPoints: function () {
@@ -325,7 +327,7 @@
       var b2 = this.eng.addBinaryPoints(bin, side, pts);
       this.storage.saveBinary(b2);
       if (this.bus) this.bus.emit(EV.RENDER_REQUIRED);
-      showToast(pts + ' pontos adicionados na ' + (side === 'left' ? 'Esquerda' : 'Direita'), 'success');
+      showToast(pts + ' ' + (side === 'left' ? _t('dev_points_added_left') : _t('dev_points_added_right')), 'success');
     },
 
     processBinaryPayout: function () {
@@ -334,7 +336,7 @@
       var qual = this.eng.getQualificationStatus(tree);
       var result = this.eng.calcBinaryPayout(bin.leftPoints, bin.rightPoints, { qualified: qual.qualified });
       if (result.skipped) {
-        showToast(result.skipReason === 'NOT_QUALIFIED' ? 'Você ainda não está qualificado. Cadastre 1 ativo em cada perna.' : 'Sem pontos suficientes para rodar o binário', 'warning');
+        showToast(result.skipReason === 'NOT_QUALIFIED' ? _t('dev_qualification_warning') : _t('dev_nopoints_warning'), 'warning');
         return;
       }
       this.storage.saveBinary({ leftPoints: result.newLeft, rightPoints: result.newRight });
@@ -348,7 +350,7 @@
         this.bus.emit(EV.WALLET_UPDATED, wall);
         this.bus.emit(EV.RENDER_REQUIRED);
       }
-      showToast('Binário processado! ' + fmt(result.payout) + ' creditados.', 'success');
+      showToast(_t('dev_binary_processed_ok') + ' ' + fmt(result.payout) + ' ' + _t('dev_binary_processed_credit'), 'success');
     }
   };
 

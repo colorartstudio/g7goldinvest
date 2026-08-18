@@ -1,6 +1,9 @@
 (function (global) {
   'use strict';
 
+  var _i18n = global.i18n;
+  var _t = function(k,v){ return _i18n && typeof _i18n.t==='function' ? _i18n.t(k,v) : k; };
+
   var _C = global.CONTRACTS || {};
   var EV = _C.EVENTS || {};
   var WL = _C.WALLET || { WITHDRAW_MIN: 50, WITHDRAW_FEE_PCT: 0.05 };
@@ -32,7 +35,7 @@
       setText('walletTotalGains', '$' + (w.totalGains || 0).toFixed(2));
       setText('walletTotalWithdrawn', '$' + (w.totalWithdrawn || 0).toFixed(2));
       setText('walletAvailable', '$' + (w.availableWithdraw || 0).toFixed(2));
-      setText('withdrawWalletDest', user.walletAddress || 'Não cadastrada (Acesse Configurações)');
+      setText('withdrawWalletDest', user.walletAddress || _t('wallet_not_registered', 'Não cadastrada (Acesse Configurações)'));
     },
 
     openWithdrawModal: function () {
@@ -62,7 +65,7 @@
       if (!this.storage || !this.bus || !this.ui) return;
       var user = this.storage.getUser() || {};
       if (!user.walletAddress) {
-        this.ui.showToast('Cadastre sua carteira de saque em Configurações antes de solicitar o saque!', 'error');
+        this.ui.showToast(_t('wallet_wallet_error', 'Cadastre sua carteira de saque em Configurações antes de solicitar o saque!'), 'error');
         return;
       }
 
@@ -72,11 +75,11 @@
       var wallet = this.storage.getWallet() || {};
 
       if (amt < (WL.WITHDRAW_MIN || 50)) {
-        this.ui.showToast('O valor mínimo para saque é de $50 USD.', 'error');
+        this.ui.showToast(_t('wallet_min_error', 'O valor mínimo para saque é de $50 USD.'), 'error');
         return;
       }
       if (amt > (wallet.availableWithdraw || 0)) {
-        this.ui.showToast('Saldo disponível insuficiente para realizar este saque.', 'error');
+        this.ui.showToast(_t('wallet_balance_error', 'Saldo disponível insuficiente para realizar este saque.'), 'error');
         return;
       }
 
@@ -87,10 +90,10 @@
       var txs = this.storage.getTransactions() || [];
       txs.unshift({
         id: this.ui.generateTxId(),
-        type: 'Solicitação de Saque USDT BEP-20',
+        type: _t('wallet_withdraw_tx_type', 'Solicitação de Saque USDT BEP-20'),
         date: new Date().toLocaleString('pt-BR'),
         amount: -amt,
-        status: 'Processando'
+        status: _t('wallet_status_processing', 'Processando')
       });
       this.storage.saveTransactions(txs);
 
@@ -98,7 +101,7 @@
       this.bus.emit(EV.WALLET_UPDATED, wallet);
       this.bus.emit(EV.TRANSACTION_ADDED);
       this.bus.emit(EV.RENDER_REQUIRED);
-      this.ui.showToast('Saque solicitado com sucesso!', 'success');
+      this.ui.showToast(_t('wallet_withdraw_ok', 'Saque solicitado com sucesso!'), 'success');
     }
   };
 

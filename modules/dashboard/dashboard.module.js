@@ -1,6 +1,9 @@
 (function (global) {
   'use strict';
 
+  var _i18n = global.i18n;
+  var _t = function(k,v){ return _i18n && typeof _i18n.t==='function' ? _i18n.t(k,v) : k; };
+
   var _C = global.CONTRACTS || {};
   var EV = _C.EVENTS || {};
 
@@ -45,9 +48,9 @@
         container.innerHTML =
           '<div class="col-span-full bg-dark-card border border-dark-border rounded-xl p-8 text-center text-gray-400 space-y-3">' +
             '<i data-lucide="inbox" class="w-10 h-10 mx-auto text-amber-500/40"></i>' +
-            '<p class="text-sm font-medium">Nenhuma aplicação ativa no momento.</p>' +
+            '<p class="text-sm font-medium">' + _t('apps_empty') + '</p>' +
             '<button onclick="app.openInvestModal()" class="px-4 py-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded-xl text-xs font-bold inline-flex items-center gap-1">' +
-              '<i data-lucide="plus" class="w-4 h-4"></i> Realizar Primeira Aplicação' +
+              '<i data-lucide="plus" class="w-4 h-4"></i> ' + _t('apps_first_btn') +
             '</button>' +
           '</div>';
         if (global.lucide) lucide.createIcons();
@@ -56,12 +59,13 @@
 
       container.innerHTML = apps.map(function (a) {
         var target = a.amount * 2;
+        var currentValue = a.amount + a.accumulatedGains;
         var progressPct = Math.min((a.accumulatedGains / a.amount) * 100, 100).toFixed(2);
         var isCompleted = a.accumulatedGains >= a.amount;
         var statusClass = isCompleted
           ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
           : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
-        var statusText = isCompleted ? 'Ciclo Concluído 🎉' : 'Aplicação Ativa';
+        var statusText = isCompleted ? _t('app_card_status_goal') : _t('app_card_status_active');
 
         return (
           '<div class="gold-border-card p-4 space-y-3">' +
@@ -70,10 +74,11 @@
               '<span class="text-[10px] px-2 py-0.5 rounded-full ' + statusClass + ' font-semibold">' + statusText + '</span>' +
             '</div>' +
             '<div class="grid grid-cols-2 gap-2 text-xs">' +
-              '<div><span class="text-gray-400 block text-[10px]">Capital Aplicado</span><strong class="text-white text-sm">$' + a.amount.toFixed(2) + '</strong></div>' +
-              '<div><span class="text-gray-400 block text-[10px]">Ganho Acumulado</span><strong class="text-emerald-400 text-sm">$' + a.accumulatedGains.toFixed(2) + '</strong></div>' +
-              '<div><span class="text-gray-400 block text-[10px]">Rentabilidade Atual</span><strong class="text-amber-400">' + a.dailyRate + '% / dia</strong></div>' +
-              '<div><span class="text-gray-400 block text-[10px]">Meta do Ciclo</span><strong class="text-gray-300">$' + target.toFixed(2) + '</strong></div>' +
+              '<div><span class="text-gray-400 block text-[10px]">' + _t('app_card_value') + '</span><strong class="text-white text-sm">$' + a.amount.toFixed(2) + '</strong></div>' +
+              '<div><span class="text-gray-400 block text-[10px]">' + _t('app_card_current') + '</span><strong class="text-white text-sm">$' + currentValue.toFixed(2) + '</strong></div>' +
+              '<div><span class="text-gray-400 block text-[10px]">' + _t('app_card_earned') + '</span><strong class="text-emerald-400 text-sm">$' + a.accumulatedGains.toFixed(2) + '</strong></div>' +
+              '<div><span class="text-gray-400 block text-[10px]">' + _t('app_card_rate') + '</span><strong class="text-amber-400">' + a.dailyRate + '% / dia</strong></div>' +
+              '<div><span class="text-gray-400 block text-[10px]">' + _t('app_card_goal') + '</span><strong class="text-gray-300">$' + target.toFixed(2) + '</strong></div>' +
             '</div>' +
             '<div class="space-y-1 pt-1">' +
               '<div class="flex justify-between text-[11px] text-gray-400 font-mono"><span>Progresso do Ciclo</span><span class="text-amber-400 font-bold">' + progressPct + '%</span></div>' +
@@ -124,7 +129,7 @@
       this.bus.emit(EV.WALLET_UPDATED, wallet);
       this.bus.emit(EV.TRANSACTION_ADDED);
       this.bus.emit(EV.RENDER_REQUIRED);
-      this.ui.showToast('Rendimento diário de +$' + totalGainToday.toFixed(2) + ' creditado!', 'success');
+      this.ui.showToast(_t('dev_daily_yield_ok') + ' +$' + totalGainToday.toFixed(2) + ' ' + _t('dev_daily_yield_simulated'), 'success');
     },
 
     initTradingChart: function () {

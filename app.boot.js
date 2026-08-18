@@ -14,6 +14,7 @@
     storage: global.storageService,
     bus: global.eventBus,
     ui: global.ui,
+    i18n: global.i18n,
 
     dashboard: global.dashboardModule,
     team: global.teamModule,
@@ -23,8 +24,18 @@
     support: global.supportModule,
     invest: global.investModule,
 
+    t: function (k, v) { return (this.i18n && typeof this.i18n.t === 'function') ? this.i18n.t(k, v) : k; },
+
     init: function () {
       if (this.storage) this.storage.init();
+
+      if (this.i18n && typeof this.i18n.init === 'function') {
+        var savedLang = (this.storage && typeof this.storage.getLanguage === 'function')
+          ? this.storage.getLanguage()
+          : 'pt';
+        this.i18n.init(savedLang || 'pt');
+      }
+      if (this.i18n && typeof this.i18n.apply === 'function') this.i18n.apply();
 
       if (this.dashboard && typeof this.dashboard.init === 'function') this.dashboard.init();
       if (this.team && typeof this.team.init === 'function') this.team.init();
@@ -82,6 +93,7 @@
 
     renderAll: function () {
       this._renderProfile();
+      if (this.i18n && typeof this.i18n.apply === 'function') this.i18n.apply();
       if (this.bus) this.bus.emit(EV.RENDER_REQUIRED);
       this._renderNotifications();
       if (global.lucide && typeof lucide.createIcons === 'function') lucide.createIcons();
@@ -110,7 +122,15 @@
       }
       if (!list) return;
       if (notes.length === 0) {
-        list.innerHTML = '<div class="p-4 text-center text-xs text-gray-500">Sem notificações</div>';
+        list.innerHTML = '<div class="p-4 text-center text-xs text-gray-500" data-i18n="notif_empty">Sem notificações</div>';
+        if (this.i18n && typeof this.i18n.apply === 'function') {
+          var empty = list.querySelector('[data-i18n="notif_empty"]');
+          if (empty) empty.textContent = this.i18n.t('notif_empty');
+        }
+        if (!this.i18n || !this.i18n.t) {
+          var d = list.querySelector('[data-i18n="notif_empty"]');
+          if (d) d.textContent = 'Sem notificações';
+        }
         return;
       }
       list.innerHTML = notes.map(function (n) {
@@ -131,11 +151,22 @@
 
     resetAllData: function () {
       if (!this.storage || !this.bus || !this.ui) return;
-      if (!global.confirm('Tem certeza que deseja apagar todos os dados de teste e resetar o sistema?')) return;
+      var msg = this.t ? this.t('reset_confirm_msg') : 'Tem certeza que deseja apagar todos os dados de teste e resetar o sistema?';
+      if (!global.confirm(msg)) return;
+      var prevLang = (this.storage && typeof this.storage.getLanguage === 'function')
+        ? this.storage.getLanguage()
+        : (this.i18n ? this.i18n.getLanguage() : 'pt');
       this.storage.resetToDefaults();
+      if (this.storage && typeof this.storage.saveLanguage === 'function') {
+        this.storage.saveLanguage(prevLang || 'pt');
+      } else if (this.storage && this.storage.KEYS && this.storage.KEYS.LANG) {
+        try { localStorage.setItem(this.storage.KEYS.LANG, prevLang || 'pt'); } catch (e) {}
+      }
+      if (this.i18n && typeof this.i18n.init === 'function') this.i18n.init(prevLang || 'pt');
+      if (this.i18n && typeof this.i18n.apply === 'function') this.i18n.apply();
       this.bus.emit(EV.DATA_RESET);
       this.renderAll();
-      this.ui.showToast('Todos os dados foram resetados com sucesso!', 'success');
+      this.ui.showToast(this.t ? this.t('dev_reset_confirm') : 'Dados resetados com sucesso!', 'success');
     },
 
     showToast: function (msg, type) {
@@ -177,7 +208,15 @@
     setLanguage: function (lang) {
       var d = el('langDropdown');
       if (d) d.classList.add('hidden');
-      this.showToast('Idioma alterado para: ' + lang.toUpperCase(), 'success');
+      if (this.i18n && typeof this.i18n.setLanguage === 'function') {
+        this.i18n.setLanguage(lang);
+      }
+      if (this.ui && typeof this.ui.showToast === 'function') {
+        var label = (this.i18n && typeof this.i18n.langFull === 'function')
+          ? this.i18n.langFull()
+          : lang.toUpperCase();
+        this.ui.showToast((this.t ? this.t('lang_changed') : 'Idioma alterado para: ') + label, 'success');
+      }
     }
   };
 
