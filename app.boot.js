@@ -26,6 +26,41 @@
 
     t: function (k, v) { return (this.i18n && typeof this.i18n.t === 'function') ? this.i18n.t(k, v) : k; },
 
+    _initDropdownOutside: function () {
+      var self = this;
+      var DROPDOWN_IDS = ['langDropdown', 'notifDropdown', 'profileDropdown'];
+      var TOGGLE_BTN_SELECTORS = [
+        'button[onclick*="toggleLangMenu"]',
+        'button[onclick*="toggleNotifications"]',
+        'button[onclick*="toggleProfileMenu"]'
+      ].join(',');
+
+      document.addEventListener('click', function (evt) {
+        var tgt = evt.target;
+        if (!tgt) return;
+
+        var clickedInsideDropdown = DROPDOWN_IDS.some(function (id) {
+          var d = document.getElementById(id);
+          return d && (d === tgt || d.contains(tgt));
+        });
+
+        var clickedInsideToggle = false;
+        if (tgt.closest) {
+          clickedInsideToggle = !!tgt.closest(TOGGLE_BTN_SELECTORS);
+        }
+
+        if (clickedInsideDropdown || clickedInsideToggle) return;
+
+        self._closeDropdowns(null);
+      });
+
+      document.addEventListener('keydown', function (evt) {
+        if (evt.key === 'Escape') {
+          self._closeDropdowns(null);
+        }
+      });
+    },
+
     init: function () {
       if (this.storage) this.storage.init();
 
@@ -47,6 +82,8 @@
 
       if (global.lucide && typeof lucide.createIcons === 'function') lucide.createIcons();
 
+      this._initDropdownOutside();
+
       this.renderAll();
 
       if (this.dashboard) {
@@ -58,6 +95,7 @@
     navigateTo: function (view) {
       var self = this;
       this.currentView = view;
+      this._closeDropdowns(null);
       VIEWS.forEach(function (v) {
         var e = el('view-' + v);
         if (e) e.classList.add('hidden');
@@ -200,14 +238,53 @@
     filterReports: function (f) { if (this.reports) this.reports.filterReports(f); },
 
     toggleDevPanel: function () { var p = el('devPanel'); if (p) p.classList.toggle('hidden'); },
-    toggleLangMenu: function () { var d = el('langDropdown'); if (d) d.classList.toggle('hidden'); },
-    toggleNotifications: function () { var d = el('notifDropdown'); if (d) d.classList.toggle('hidden'); },
-    toggleProfileMenu: function () { var d = el('profileDropdown'); if (d) d.classList.toggle('hidden'); },
+
+    _closeDropdowns: function (except) {
+      var ids = ['langDropdown', 'notifDropdown', 'profileDropdown'];
+      var self = this;
+      ids.forEach(function (id) {
+        if (id === except) return;
+        self._closeDropdown(id);
+      });
+    },
+
+    _closeDropdown: function (id) {
+      var d = el(id);
+      if (!d) return;
+      d.classList.add('hidden');
+      d.style.display = '';
+    },
+
+    _openDropdown: function (id) {
+      var d = el(id);
+      if (!d) return;
+      d.classList.remove('hidden');
+      if (id === 'langDropdown') {
+        d.style.display = 'block';
+      } else if (id === 'notifDropdown') {
+        d.style.display = 'flex';
+      } else {
+        d.style.display = 'block';
+      }
+    },
+
+    _toggleDropdown: function (id) {
+      var d = el(id);
+      if (!d) return;
+      var wasOpen = !d.classList.contains('hidden');
+      this._closeDropdowns(null);
+      if (!wasOpen) {
+        this._openDropdown(id);
+      }
+    },
+
+    toggleLangMenu: function () { this._toggleDropdown('langDropdown'); },
+    toggleNotifications: function () { this._toggleDropdown('notifDropdown'); },
+    toggleProfileMenu: function () { this._toggleDropdown('profileDropdown'); },
     toggleMobileMenu: function () { this.navigateTo('settings'); },
 
     setLanguage: function (lang) {
-      var d = el('langDropdown');
-      if (d) d.classList.add('hidden');
+      this._closeDropdown('langDropdown');
       if (this.i18n && typeof this.i18n.setLanguage === 'function') {
         this.i18n.setLanguage(lang);
       }

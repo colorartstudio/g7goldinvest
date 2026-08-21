@@ -114,8 +114,31 @@
     getApplications: function () { return getJSON(KEYS.APPLICATIONS); },
     saveApplications: function (apps) { return setJSON(KEYS.APPLICATIONS, apps); },
 
-    getTransactions: function () { return getJSON(KEYS.TRANSACTIONS); },
+    getTransactions: function () { return getJSON(KEYS.TRANSACTIONS) || []; },
     saveTransactions: function (txs) { return setJSON(KEYS.TRANSACTIONS, txs); },
+
+    addTransaction: function (tx) {
+      if (!tx || typeof tx !== 'object') return false;
+      var list = this.getTransactions() || [];
+      var now = new Date();
+      var pad2 = function(n){ n=Number(n)||0; return n<10?'0'+n:String(n); };
+      var dateStr = now.toLocaleDateString
+        ? (now.toLocaleDateString() + ' ' + now.toLocaleTimeString().slice(0,5))
+        : (now.getFullYear()+'-'+pad2(now.getMonth()+1)+'-'+pad2(now.getDate())+' '+pad2(now.getHours())+':'+pad2(now.getMinutes()));
+      var entry = {
+        id: tx.id != null ? tx.id : ('tx_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,7)),
+        type: tx.type || 'Depósito / Aplicação',
+        amount: Number(tx.amount) || 0,
+        status: tx.status || 'Creditado',
+        date: tx.date || dateStr,
+        createdAt: tx.createdAt || now.getTime(),
+        description: tx.description || '',
+        details: tx.details || null,
+        currency: tx.currency || 'USD'
+      };
+      list.unshift(entry);
+      return this.saveTransactions(list) ? entry : false;
+    },
 
     getNotifications: function () { return getJSON(KEYS.NOTIFICATIONS); },
     saveNotifications: function (notes) { return setJSON(KEYS.NOTIFICATIONS, notes); },

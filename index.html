@@ -46,21 +46,22 @@
 
   <!-- TOP HEADER (Desktop & Mobile Top Bar) -->
   <header class="bg-dark-card border-b border-dark-border sticky top-0 z-40">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2">
 
       <!-- Logo Component -->
-      <div class="flex items-center space-x-3 cursor-pointer" onclick="app.navigateTo('home')">
-        <div id="appLogo" class="flex items-center space-x-2">
+      <div class="flex items-center space-x-2 cursor-pointer min-w-0 flex-shrink-0" onclick="app.navigateTo('home')">
+        <div id="appLogo" class="flex items-center space-x-2 min-w-0">
           <img
             src="public/logo/logo_g7-bola.svg"
             alt="G7 Gold Invest"
-            class="w-10 h-10 rounded-xl object-contain shadow-lg shadow-amber-500/20 drop-shadow-md"
+            class="rounded-xl object-contain shadow-lg shadow-amber-500/20 drop-shadow-md flex-shrink-0"
+            style="width: 40px; height: 40px;"
           />
           <img
             src="public/logo/logo_g7-nome.png"
             alt="G7 Gold Investment"
-            class="h-10 object-contain"
-            style="width: auto; max-width: 200px;"
+            class="object-contain min-w-0 hidden xs:block flex-shrink-0"
+            style="height: 36px; width: auto; max-width: min(40vw, 220px);"
           />
         </div>
       </div>
@@ -85,16 +86,16 @@
       </nav>
 
       <!-- Right Utility Actions -->
-      <div class="flex items-center space-x-3">
+      <div class="flex items-center space-x-1.5 sm:space-x-2 lg:space-x-3 flex-shrink-0 min-w-0 z-50">
 
         <!-- Language Selector -->
-        <div class="relative">
+        <div class="relative flex-shrink-0">
           <button id="langBtn" onclick="app.toggleLangMenu()" class="p-2 rounded-lg border border-dark-border bg-dark-hover text-gray-300 hover:text-white flex items-center gap-1 text-xs">
             <span id="currentLangFlag">🇧🇷</span>
             <span id="currentLangText" class="hidden sm:inline font-semibold">PT</span>
             <i data-lucide="chevron-down" class="w-3 h-3"></i>
           </button>
-          <div id="langDropdown" class="hidden absolute right-0 mt-2 w-32 bg-dark-card border border-dark-border rounded-xl shadow-2xl py-1 z-50">
+          <div id="langDropdown" class="hidden bg-dark-card border border-dark-border rounded-xl py-1 shadow-[0_10px_30px_rgba(0,0,0,0.6)]">
             <button onclick="app.setLanguage('pt')" class="w-full px-3 py-2 text-left text-xs text-gray-300 hover:bg-dark-hover flex items-center gap-2">🇧🇷 Português</button>
             <button onclick="app.setLanguage('en')" class="w-full px-3 py-2 text-left text-xs text-gray-300 hover:bg-dark-hover flex items-center gap-2">🇺🇸 English</button>
             <button onclick="app.setLanguage('es')" class="w-full px-3 py-2 text-left text-xs text-gray-300 hover:bg-dark-hover flex items-center gap-2">🇪🇸 Español</button>
@@ -102,24 +103,22 @@
         </div>
 
         <!-- Notifications Bell -->
-        <div class="relative">
+        <div class="relative flex-shrink-0">
           <button onclick="app.toggleNotifications()" class="p-2 rounded-lg border border-dark-border bg-dark-hover text-gray-300 hover:text-amber-400 relative">
             <i data-lucide="bell" class="w-5 h-5"></i>
             <span id="notifBadge" class="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 text-black font-bold text-[10px] rounded-full flex items-center justify-center hidden">0</span>
           </button>
-          <div id="notifDropdown" class="hidden absolute right-0 mt-2 w-80 bg-dark-card border border-dark-border rounded-xl shadow-2xl z-50 overflow-hidden">
+          <div id="notifDropdown" class="hidden bg-dark-card border border-dark-border rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.7)]">
             <div class="p-3 border-b border-dark-border flex justify-between items-center bg-dark-hover">
-              <span data-i18n="notif_title" class="text-xs font-bold text-gray-200">Notificações</span>
-              <button onclick="app.clearNotifications()" class="text-[11px] text-amber-400 hover:underline" data-i18n="notif_clear_all">Limpar todas</button>
+              <span data-i18n="notif_title" class="text-sm font-bold text-gray-200 whitespace-nowrap">Notificações</span>
+              <button onclick="app.clearNotifications()" class="text-[11px] md:text-xs text-amber-400 hover:underline whitespace-nowrap flex-shrink-0 ml-2" data-i18n="notif_clear_all">Limpar todas</button>
             </div>
-            <div id="notifList" class="max-h-64 overflow-y-auto divide-y divide-dark-border">
-              <!-- Dynamically Populated -->
-            </div>
+            <div id="notifList" class="divide-y divide-dark-border"></div>
           </div>
         </div>
 
         <!-- User Profile Dropdown -->
-        <div class="relative">
+        <div class="relative flex-shrink-0">
           <button onclick="app.toggleProfileMenu()" class="flex items-center space-x-2 p-1.5 rounded-lg border border-dark-border bg-dark-hover hover:border-amber-500/50 transition">
             <div class="w-7 h-7 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-xs border border-amber-500/30">
               <span id="userAvatarChar">G</span>
@@ -127,7 +126,7 @@
             <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-gray-400"></i>
           </button>
 
-          <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-64 bg-dark-card border border-dark-border rounded-xl shadow-2xl p-4 z-50">
+          <div id="profileDropdown" class="hidden bg-dark-card border border-dark-border rounded-xl p-4 shadow-[0_10px_40px_rgba(0,0,0,0.7)]">
             <div class="border-b border-dark-border pb-3 mb-3">
               <div id="profileName" class="font-bold text-sm text-white">Investidor G7</div>
               <div id="profileUsername" class="text-xs text-amber-400">@g7investidor</div>

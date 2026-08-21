@@ -255,7 +255,15 @@
       if (!stats) return;
 
       var rc = el('team-direct-count'); if (rc) rc.textContent = stats.directCount;
+      var tdC = el('teamDirectCount');
+      if (tdC) tdC.textContent = (stats.directCount || 0) + ' ' + _t('team_active_short');
       var rac = el('team-active-count'); if (rac) rac.textContent = stats.activeCount;
+
+      var blp = el('binaryLeftPoints');
+      if (blp) blp.textContent = (stats.leftPoints || 0) + ' ' + _t('tree_points_short');
+      var brp = el('binaryRightPoints');
+      if (brp) brp.textContent = (stats.rightPoints || 0) + ' ' + _t('tree_points_short');
+
       var rlg = el('team-lesser-leg'); if (rlg) rlg.textContent = fmt(stats.lesserLeg);
       var rgr = el('team-greater-leg'); if (rgr) rgr.textContent = fmt(stats.greaterLeg);
       var rbp = el('team-binary-pending'); if (rbp) rbp.textContent = fmt(stats.pendingBinaryPayout);
@@ -295,10 +303,24 @@
       team.bonusClaimed = true;
       this.storage.saveTeam(team);
       var wall = this.storage.getWallet() || {};
-      wall.bonusGains = Number(wall.bonusGains || 0) + stats.bonusProgress.bonusAmount;
-      wall.availableWithdraw = Number(wall.availableWithdraw || 0) + stats.bonusProgress.bonusAmount;
-      wall.totalGains = Number(wall.totalGains || 0) + stats.bonusProgress.bonusAmount;
+      var bonus = Number(stats.bonusProgress.bonusAmount) || 0;
+      wall.bonusGains = Number(wall.bonusGains || 0) + bonus;
+      wall.availableWithdraw = Number(wall.availableWithdraw || 0) + bonus;
+      wall.totalGains = Number(wall.totalGains || 0) + bonus;
       this.storage.saveWallet(wall);
+
+      if (this.storage && typeof this.storage.addTransaction === 'function' && bonus > 0) {
+        var target = Number(stats.bonusProgress && stats.bonusProgress.target) || 0;
+        var active = Number(stats.bonusProgress && stats.bonusProgress.activeCount) || 0;
+        this.storage.addTransaction({
+          type: 'Bônus Equipe',
+          amount: bonus,
+          status: 'Creditado',
+          description: 'Bônus de Equipe (Meta ' + target + ' ativos) · ' + active + '/' + target + ' concluído',
+          details: { target: target, activeCount: active, bonusAmount: bonus, source: 'team_10_bonus' }
+        });
+      }
+
       if (this.bus) {
         this.bus.emit(EV.BONUS_CLAIMED, { amount: stats.bonusProgress.bonusAmount });
         this.bus.emit(EV.WALLET_UPDATED, wall);
@@ -309,31 +331,98 @@
 
     simAddReferral: function () {
       var side = Math.random() < 0.5 ? 'left' : 'right';
-      var pts = 100 + Math.floor(Math.random() * 500);
+      var appAmount = 100 + Math.floor(Math.random() * 500);
+      var pts = appAmount;
+
       var team = this.storage.getTeam() || {};
-      var t2 = this.eng.addReferral(team, pts);
+      var t2 = this.eng.addReferral(team, appAmount);
       this.storage.saveTeam(t2);
+
       var bin = this.storage.getBinary() || {};
       var b2 = this.eng.addBinaryPoints(bin, side, pts);
       this.storage.saveBinary(b2);
-      if (this.bus) { this.bus.emit(EV.REFERRAL_ADDED, { side: side, amount: pts }); this.bus.emit(EV.RENDER_REQUIRED); }
-      showToast((side === 'left' ? _t('dev_referral_added_left') : _t('dev_referral_added_right')) + ' ' + fmt(pts), 'success');
+
+      var bonusResult = this.eng.calcDirectBonus(appAmount);
+      var commission = Number(bonusResult.commission) || 0;
+      var pctDisplay = Math.round(Number(bonusResult.percentage || 0) * 100);
+
+      var wall = this.storage.getWallet() || {};
+      if (commission > 0) {
+        wall.teamGains = Number(wall.teamGains || 0) + commission;
+        wall.availableWithdraw = Number(wall.availableWithdraw || 0) + commission;
+        wall.totalGains = Number(wall.totalGains || 0) + commission;
+        this.storage.saveWallet(wall);
+      }
+
+      if (this.storage && typeof this.storage.addTransaction === 'function') {
+        this.storage.addTransaction({
+          type: 'Comissão Indicação',
+          amount: commission,
+          status: 'Creditado',
+          description: 'Indicação Direta Nível 1 · ' + pctDisplay + '% · Aplicação ' + fmt(appAmount) + ' · ' + (side === 'left' ? 'Perna Esquerda' : 'Perna Direita'),
+          details: { side: side, appAmount: appAmount, points: pts, percentage: pctDisplay, referralLevel: 1 }
+        });
+        this.storage.addTransaction({
+          type: 'Depósito / Aplicação',
+          amount: appAmount,
+          status: 'Confirmado',
+          description: 'Nova indicação direta · Pontos Binários: ' + pts + ' pts adicionados na ' + (side === 'left' ? 'Perna Esquerda' : 'Perna Direita'),
+          details: { side: side, appAmount: appAmount, points: pts, referralType: 'direct' }
+        });
+      }
+
+      if (this.bus) {
+        this.bus.emit(EV.REFERRAL_ADDED, { side: side, amount: appAmount, points: pts, commission: commission });
+        this.bus.emit(EV.WALLET_UPDATED, wall);
+        this.bus.emit(EV.RENDER_REQUIRED);
+      }
+
+      var sideText = side === 'left' ? _t('dev_referral_added_left') : _t('dev_referral_added_right');
+      var toastMsg = sideText + ' · ' + fmt(appAmount) + ' · ' + _t('dev_referral_commission', { pct: pctDisplay, value: fmt(commission) });
+      showToast(toastMsg, 'success');
     },
 
     simAddBinaryPoints: function () {
       var side = Math.random() < 0.5 ? 'left' : 'right';
       var pts = 100 + Math.floor(Math.random() * 1000);
-      var bin = this.storage.getBinary() || {};
+      var bin = this.storage.getBinary() || { leftPoints: 0, rightPoints: 0 };
+      var beforeL = Number(bin.leftPoints) || 0;
+      var beforeR = Number(bin.rightPoints) || 0;
       var b2 = this.eng.addBinaryPoints(bin, side, pts);
       this.storage.saveBinary(b2);
+      var afterL = Number(b2.leftPoints) || 0;
+      var afterR = Number(b2.rightPoints) || 0;
+
+      if (this.storage && typeof this.storage.addTransaction === 'function') {
+        this.storage.addTransaction({
+          type: 'Depósito / Aplicação',
+          amount: pts,
+          status: 'Confirmado',
+          description: 'Pontos Binários · ' + pts + ' pts adicionados na ' + (side === 'left' ? 'Perna Esquerda' : 'Perna Direita'),
+          details: {
+            side: side,
+            pointsAdded: pts,
+            before: { leftPoints: beforeL, rightPoints: beforeR },
+            after: { leftPoints: afterL, rightPoints: afterR },
+            source: 'manual_points'
+          }
+        });
+      }
+
       if (this.bus) this.bus.emit(EV.RENDER_REQUIRED);
-      showToast(pts + ' ' + (side === 'left' ? _t('dev_points_added_left') : _t('dev_points_added_right')), 'success');
+
+      var sideKey = side === 'left' ? 'dev_points_added_left' : 'dev_points_added_right';
+      var totalNow = side === 'left' ? afterL : afterR;
+      var toastMsg = pts + ' ' + _t(sideKey) + ' · ' + _t('dev_points_total', { value: totalNow });
+      showToast(toastMsg, 'success');
     },
 
     processBinaryPayout: function () {
       var bin = this.storage.getBinary() || { leftPoints: 0, rightPoints: 0 };
       var tree = this.currentTree || (this.storage && this.storage.getTree());
       var qual = this.eng.getQualificationStatus(tree);
+      var beforeL = Number(bin.leftPoints) || 0;
+      var beforeR = Number(bin.rightPoints) || 0;
       var result = this.eng.calcBinaryPayout(bin.leftPoints, bin.rightPoints, { qualified: qual.qualified });
       if (result.skipped) {
         showToast(result.skipReason === 'NOT_QUALIFIED' ? _t('dev_qualification_warning') : _t('dev_nopoints_warning'), 'warning');
@@ -345,6 +434,32 @@
       wall.availableWithdraw = Number(wall.availableWithdraw || 0) + result.payout;
       wall.totalGains = Number(wall.totalGains || 0) + result.payout;
       this.storage.saveWallet(wall);
+
+      if (this.storage && typeof this.storage.addTransaction === 'function') {
+        var modeLabel = result.mode === 'FIXED'
+          ? (_t('dev_payout_mode_fixed', { value: fmt(result.fixedAmount || 0) }))
+          : (Math.round((result.percentage || 0) * 100) + '% ' + _t('tree_payout_lesser'));
+        var usedLegLabel = result.discountFrom === 'GREATER_LEG' ? _t('tree_payout_greater') : (result.discountFrom === 'LESSER_LEG' ? _t('tree_payout_lesser') : 'Ambas');
+        this.storage.addTransaction({
+          type: 'Bônus Binário',
+          amount: result.payout,
+          status: 'Creditado',
+          description: 'Pagamento Binário · ' + modeLabel + ' · Desconto da ' + usedLegLabel
+            + ' · Antes: E=' + beforeL + ' / D=' + beforeR
+            + ' · Depois: E=' + (result.newLeft || 0) + ' / D=' + (result.newRight || 0),
+          details: {
+            mode: result.mode,
+            payout: result.payout,
+            fixedAmount: result.fixedAmount || null,
+            percentage: result.percentage || null,
+            discountFrom: result.discountFrom,
+            before: { leftPoints: beforeL, rightPoints: beforeR, lesserLeg: result.lesserLeg, greaterLeg: result.greaterLeg },
+            after: { leftPoints: result.newLeft, rightPoints: result.newRight },
+            qualified: !!result.qualified
+          }
+        });
+      }
+
       if (this.bus) {
         this.bus.emit(EV.BINARY_PAYOUT_PROCESSED, result);
         this.bus.emit(EV.WALLET_UPDATED, wall);
